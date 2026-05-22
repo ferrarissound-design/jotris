@@ -72,8 +72,6 @@ const levelEl = document.getElementById('level');
 const linesEl = document.getElementById('lines');
 const highScoreEl = document.getElementById('high-score');
 
-const controls = document.querySelector('.controls');
-
 let state;
 let lastTime = 0;
 let dropCounter = 0;
@@ -427,20 +425,46 @@ function handleKeyDown(event) {
   else if (key.toLowerCase() === 'p') togglePause();
 }
 
-function handleControl(action) {
-  if (!state) return;
-  if (action === 'left') move(-1, 0);
-  if (action === 'right') move(1, 0);
-  if (action === 'down') move(0, 1);
-  if (action === 'rotate') rotate();
-  if (action === 'drop') hardDrop();
+// タッチジェスチャー: タップ→回転、左右スワイプ→移動、下スワイプ→ハードドロップ
+let touchStart = null;
+let touchLastX = 0;
+let touchAccX = 0;
+
+function displayBlockSize() {
+  return boardCanvas.getBoundingClientRect().width / COLS;
 }
 
-function handleButtonPress(event) {
-  const btn = event.target.closest('button[data-action]');
-  if (!btn) return;
-  event.preventDefault();
-  handleControl(btn.dataset.action);
+function handleTouchStart(e) {
+  if (e.touches.length !== 1) return;
+  const t = e.touches[0];
+  touchStart = { x: t.clientX, y: t.clientY, time: Date.now() };
+  touchLastX = t.clientX;
+  touchAccX = 0;
+}
+
+function handleTouchMove(e) {
+  e.preventDefault();
+  if (!touchStart || e.touches.length !== 1 || !state || state.gameOver || state.paused) return;
+  const t = e.touches[0];
+  const blockSize = displayBlockSize();
+  touchAccX += t.clientX - touchLastX;
+  touchLastX = t.clientX;
+  while (touchAccX >= blockSize) { move(1, 0); touchAccX -= blockSize; }
+  while (touchAccX <= -blockSize) { move(-1, 0); touchAccX += blockSize; }
+}
+
+function handleTouchEnd(e) {
+  if (!touchStart || e.changedTouches.length !== 1) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStart.x;
+  const dy = t.clientY - touchStart.y;
+  const dt = Date.now() - touchStart.time;
+  if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && dt < 300) {
+    rotate();
+  } else if (dy > 50 && Math.abs(dy) > Math.abs(dx) * 1.2) {
+    hardDrop();
+  }
+  touchStart = null;
 }
 
 startBtn.addEventListener('click', startGame);
@@ -448,9 +472,6 @@ restartBtn.addEventListener('click', resetGame);
 pauseBtn.addEventListener('click', togglePause);
 
 document.addEventListener('keydown', handleKeyDown);
-controls.addEventListener('click', handleButtonPress);
-
-// タッチ端末向け: 操作ボタン周辺のスクロールやズームの誤作動を抑制
-['touchmove'].forEach((evt) => {
-  controls.addEventListener(evt, (e) => e.preventDefault(), { passive: false });
-});
+boardCanvas.addEventListener('touchstart', handleTouchStart, { passive: true });
+boardCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+boardCanvas.addEventListener('touchend', handleTouchEnd);
