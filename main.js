@@ -345,6 +345,11 @@ function handleKeyDown(event) {
     event.preventDefault();
   }
 
+  // 長押しリピートで回転/ハードドロップが連続発火しないようにする
+  if (event.repeat && (key === 'ArrowUp' || key === ' ' || key === 'Enter' || key.toLowerCase() === 'r')) {
+    return;
+  }
+
   if (key === 'ArrowLeft') move(-1, 0);
   else if (key === 'ArrowRight') move(1, 0);
   else if (key === 'ArrowDown') move(0, 1);
@@ -370,21 +375,10 @@ function handleButtonPress(event) {
 }
 
 startBtn.addEventListener('click', startGame);
-startBtn.addEventListener('touchend', (event) => {
-  event.preventDefault();
-  startGame();
-}, { passive: false });
-
 restartBtn.addEventListener('click', resetGame);
-restartBtn.addEventListener('touchend', (event) => {
-  event.preventDefault();
-  resetGame();
-}, { passive: false });
 
 document.addEventListener('keydown', handleKeyDown);
 controls.addEventListener('click', handleButtonPress);
-controls.addEventListener('touchend', handleButtonPress, { passive: false });
-controls.addEventListener('pointerup', handleButtonPress);
 
 // タッチ端末向け: 操作ボタン周辺のスクロールやズームの誤作動を抑制
 ['touchmove'].forEach((evt) => {
