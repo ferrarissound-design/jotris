@@ -118,7 +118,9 @@ body {
   font-weight: 700;
   box-shadow: 0 0 10px rgba(47, 243, 255, 0.35);
   -webkit-appearance: none;
+  -webkit-touch-callout: none;
   outline: none;
+  user-select: none;
 }
 
 .primary-btn:active,
