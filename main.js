@@ -91,9 +91,17 @@ function rotateMatrix(matrix) {
   return matrix[0].map((_, index) => matrix.map((row) => row[index]).reverse());
 }
 
-function randomType() {
-  const types = Object.keys(SHAPES);
-  return types[Math.floor(Math.random() * types.length)];
+let bag = [];
+
+function nextType() {
+  if (bag.length === 0) {
+    bag = Object.keys(SHAPES);
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
+  }
+  return bag.pop();
 }
 
 function spawnPiece(type) {
@@ -156,7 +164,7 @@ function lockAndContinue() {
   mergePiece();
   clearLines();
   state.piece = state.next;
-  state.next = spawnPiece(randomType());
+  state.next = spawnPiece(nextType());
 
   if (collides(state.board, state.piece)) {
     state.gameOver = true;
@@ -177,7 +185,7 @@ function holdPiece() {
   if (state.hold === null) {
     state.hold = state.piece.type;
     state.piece = state.next;
-    state.next = spawnPiece(randomType());
+    state.next = spawnPiece(nextType());
   } else {
     const temp = state.hold;
     state.hold = state.piece.type;
@@ -411,11 +419,12 @@ function gameLoop(time = 0) {
 
 function resetGame() {
   if (animationId) cancelAnimationFrame(animationId);
+  bag = [];
 
   state = {
     board: createBoard(),
-    piece: spawnPiece(randomType()),
-    next: spawnPiece(randomType()),
+    piece: spawnPiece(nextType()),
+    next: spawnPiece(nextType()),
     score: 0,
     level: 1,
     lines: 0,
