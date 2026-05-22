@@ -70,7 +70,7 @@ body {
 }
 
 .title {
-  font-size: clamp(2.2rem, 10vw, 4rem);
+  font-size: clamp(2.6rem, 11vw, 5rem);
 }
 
 .hud-title {
@@ -87,7 +87,8 @@ body {
 
 .logo-letter {
   display: inline-block;
-  -webkit-text-stroke: 2.5px #0d1540;
+  -webkit-text-stroke: 4px #0d1540;
+  paint-order: stroke fill;
   text-shadow:
     0 2px 4px rgba(0, 0, 20, 0.7),
     0 4px 12px rgba(0, 0, 20, 0.5);
