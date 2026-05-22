@@ -113,12 +113,12 @@ body {
   mix-blend-mode: screen;
 }
 
-.logo-letter.j { background-image: linear-gradient(180deg, #ff6b3d 0%, #e62020 56%, #8b0000 100%); }
-.logo-letter.o { background-image: linear-gradient(180deg, #ffb84d 0%, #ff8000 56%, #cc5200 100%); }
-.logo-letter.t { background-image: linear-gradient(180deg, #fff176 0%, #fdd835 56%, #c8a000 100%); }
-.logo-letter.r { background-image: linear-gradient(180deg, #a5f57a 0%, #43d136 56%, #1a7a00 100%); }
-.logo-letter.i { background-image: linear-gradient(180deg, #80c8ff 0%, #1e7aff 56%, #0040cc 100%); }
-.logo-letter.s { background-image: linear-gradient(180deg, #e080ff 0%, #b020e0 56%, #6600a0 100%); }
+.logo-letter.j { background-image: linear-gradient(180deg, #ff9090 0%, #ff2020 56%, #cc0000 100%); }
+.logo-letter.o { background-image: linear-gradient(180deg, #ffd090 0%, #ff8800 56%, #dd5500 100%); }
+.logo-letter.t { background-image: linear-gradient(180deg, #ffff90 0%, #ffdd00 56%, #ccaa00 100%); }
+.logo-letter.r { background-image: linear-gradient(180deg, #90ff90 0%, #22dd22 56%, #009900 100%); }
+.logo-letter.i { background-image: linear-gradient(180deg, #90c0ff 0%, #2255ff 56%, #0033cc 100%); }
+.logo-letter.s { background-image: linear-gradient(180deg, #dd90ff 0%, #cc00ff 56%, #8800bb 100%); }
 
 .subtitle {
   color: #9ad2ff;
