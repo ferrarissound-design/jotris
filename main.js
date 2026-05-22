@@ -220,10 +220,20 @@ function rotate() {
 
 function hardDrop() {
   if (state.gameOver) return;
+
+  let droppedRows = 0;
   while (!collides(state.board, state.piece)) {
     state.piece.y += 1;
+    droppedRows += 1;
   }
+
+  // 最後の1歩は衝突しているので戻す
   state.piece.y -= 1;
+  droppedRows = Math.max(0, droppedRows - 1);
+
+  // ハードドロップの落下距離に応じたボーナス
+  state.score += droppedRows * 2;
+
   lockAndContinue();
 }
 
