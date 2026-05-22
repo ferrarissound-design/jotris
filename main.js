@@ -142,8 +142,10 @@ function mergePiece() {
 
 function clearLines() {
   let cleared = 0;
+  const clearedRows = [];
   for (let y = ROWS - 1; y >= 0; y -= 1) {
     if (state.board[y].every(Boolean)) {
+      clearedRows.push(y);
       state.board.splice(y, 1);
       state.board.unshift(Array(COLS).fill(0));
       cleared += 1;
@@ -157,6 +159,14 @@ function clearLines() {
     const nextLevel = Math.floor(state.lines / 10) + 1;
     state.level = nextLevel;
     state.dropInterval = Math.max(1000 - (state.level - 1) * 80, 120);
+
+    const labels = ['', 'SINGLE', 'DOUBLE', 'TRIPLE', 'TETRIS!!'];
+    state.lineEffect = {
+      timer: 500,
+      rows: clearedRows,
+      label: labels[cleared] || `${cleared} LINES`,
+    };
+    if (navigator.vibrate) navigator.vibrate(cleared === 4 ? [60, 30, 60] : [30]);
   }
 }
 
@@ -372,6 +382,24 @@ function drawBoard() {
     });
   });
 
+  if (state.lineEffect && state.lineEffect.timer > 0) {
+    const progress = state.lineEffect.timer / 500;
+    state.lineEffect.rows.forEach(rowY => {
+      boardCtx.fillStyle = `rgba(255, 255, 255, ${progress * 0.75})`;
+      boardCtx.fillRect(0, rowY * BLOCK, boardCanvas.width, BLOCK);
+    });
+    boardCtx.globalAlpha = Math.min(1, progress * 2);
+    boardCtx.fillStyle = '#2ff3ff';
+    boardCtx.shadowColor = '#2ff3ff';
+    boardCtx.shadowBlur = 24;
+    boardCtx.font = `bold ${Math.round(BLOCK * 1.3)}px "Segoe UI", sans-serif`;
+    boardCtx.textAlign = 'center';
+    boardCtx.textBaseline = 'middle';
+    boardCtx.fillText(state.lineEffect.label, boardCanvas.width / 2, boardCanvas.height / 2);
+    boardCtx.shadowBlur = 0;
+    boardCtx.globalAlpha = 1;
+  }
+
   if (state.paused) {
     boardCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
     boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
@@ -411,6 +439,11 @@ function gameLoop(time = 0) {
     }
   }
 
+  if (state.lineEffect) {
+    state.lineEffect.timer -= delta;
+    if (state.lineEffect.timer <= 0) state.lineEffect = null;
+  }
+
   drawBoard();
   drawHold();
   drawNext();
@@ -435,6 +468,7 @@ function resetGame() {
     gameOver: false,
     paused: false,
     hold: null,
+    lineEffect: null,
   };
 
   pauseBtn.textContent = '一時停止';
