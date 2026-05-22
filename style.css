@@ -106,9 +106,18 @@ body:has(#title-screen.active) {
 .logo-letter.i { color: #4488ff; }
 .logo-letter.s { color: #dd44ff; }
 
-.subtitle {
-  color: #9ad2ff;
-  margin: 12px 0 28px;
+.start-hint {
+  margin: 32px 0 0;
+  color: #0d3b5e;
+  font-weight: 700;
+  font-size: clamp(0.95rem, 4vw, 1.15rem);
+  letter-spacing: 0.05em;
+  animation: hint-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes hint-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
 }
 
 .primary-btn,
