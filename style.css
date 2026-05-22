@@ -1,0 +1,223 @@
+:root {
+  --bg: #05060d;
+  --panel: #0f1224;
+  --neon: #2ff3ff;
+  --neon-2: #ff4dff;
+  --text: #d8f7ff;
+  --danger: #ff6a8a;
+  --side-w: 118px;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #11162d 0%, var(--bg) 55%);
+  color: var(--text);
+  font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  touch-action: manipulation;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+.app {
+  height: 100dvh;
+  padding: max(8px, env(safe-area-inset-top)) 10px max(8px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.screen {
+  width: min(960px, 100%);
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+#title-screen {
+  text-align: center;
+}
+
+#game-screen {
+  height: 100%;
+  display: none;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 6px;
+}
+
+#game-screen.active {
+  display: grid;
+}
+
+.title,
+.hud-title {
+  margin: 0;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon);
+}
+
+.title {
+  font-size: clamp(2.2rem, 10vw, 4rem);
+}
+
+.subtitle {
+  color: #9ad2ff;
+  margin: 12px 0 28px;
+}
+
+.primary-btn,
+.secondary-btn,
+.controls button {
+  border: 1px solid var(--neon);
+  background: #0a142f;
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(47, 243, 255, 0.35);
+}
+
+.primary-btn:active,
+.secondary-btn:active,
+.controls button:active {
+  transform: scale(0.97);
+}
+
+.hud {
+  margin-bottom: 0;
+}
+
+.hud-title {
+  font-size: 1.25rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(90px, 1fr));
+  gap: 4px 8px;
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+.stats p,
+.panel-title {
+  margin: 0;
+  color: #a7dfff;
+}
+
+.play-area {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--side-w);
+  gap: 8px;
+  align-items: start;
+  justify-content: center;
+}
+
+#board,
+#next,
+.side-panel {
+  background: linear-gradient(180deg, rgba(12, 20, 44, 0.95), rgba(5, 10, 24, 0.95));
+  border: 1px solid #2f5a7f;
+  box-shadow: inset 0 0 12px rgba(30, 128, 202, 0.3), 0 0 12px rgba(47, 243, 255, 0.2);
+}
+
+#board {
+  width: min(
+    300px,
+    calc(100vw - (var(--side-w) + 38px)),
+    calc((100dvh - 240px) / 2)
+  );
+  aspect-ratio: 1 / 2;
+  margin: 0 auto;
+}
+
+.side-panel {
+  padding: 8px;
+  border-radius: 12px;
+  display: grid;
+  gap: 8px;
+  width: var(--side-w);
+}
+
+#next {
+  width: 78px;
+  height: 78px;
+}
+
+.message {
+  height: 1.1em;
+  color: var(--danger);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.controls button {
+  min-height: 46px;
+  padding: 8px 0;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 380px) {
+  .hud-title {
+    font-size: 1.1rem;
+  }
+
+  .stats {
+    font-size: 0.8rem;
+  }
+
+  :root {
+    --side-w: 104px;
+  }
+
+  #next {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+@media (min-width: 760px) {
+  .app {
+    padding: 12px;
+  }
+
+  #game-screen {
+    gap: 10px;
+  }
+
+  .play-area {
+    grid-template-columns: 300px 128px;
+    gap: 12px;
+  }
+
+  #board {
+    width: 300px;
+  }
+
+  .controls {
+    max-width: 520px;
+    margin: 0 auto;
+  }
+}

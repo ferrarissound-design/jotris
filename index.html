@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <title>ジョトリス</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section id="title-screen" class="screen active" aria-label="タイトル画面">
+        <h1 class="title">ジョトリス</h1>
+        <p class="subtitle">ネオン落ち物パズル</p>
+        <button id="start-btn" class="primary-btn" type="button">ゲーム開始</button>
+      </section>
+
+      <section id="game-screen" class="screen" aria-label="ゲーム画面">
+        <header class="hud">
+          <h1 class="hud-title">ジョトリス</h1>
+          <div class="stats">
+            <p>Score <span id="score">0</span></p>
+            <p>Level <span id="level">1</span></p>
+            <p>Lines <span id="lines">0</span></p>
+            <p>Hi-Score <span id="high-score">0</span></p>
+          </div>
+        </header>
+
+        <section class="play-area">
+          <canvas id="board" width="300" height="600" aria-label="ゲーム盤面"></canvas>
+          <aside class="side-panel">
+            <p class="panel-title">NEXT</p>
+            <canvas id="next" width="120" height="120" aria-label="次のブロック"></canvas>
+            <button id="restart-btn" class="secondary-btn" type="button">リスタート (R)</button>
+          </aside>
+        </section>
+
+        <p id="message" class="message" aria-live="polite"></p>
+
+        <section class="controls" aria-label="タッチ操作">
+          <button data-action="left" type="button">◀</button>
+          <button data-action="right" type="button">▶</button>
+          <button data-action="rotate" type="button">⟳</button>
+          <button data-action="down" type="button">▼</button>
+          <button data-action="drop" type="button">⤓</button>
+        </section>
+      </section>
+    </main>
+
+    <script src="main.js"></script>
+  </body>
+</html>
