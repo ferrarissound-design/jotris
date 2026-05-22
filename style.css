@@ -67,7 +67,6 @@ body {
 .hud-title {
   margin: 0;
   letter-spacing: 0.08em;
-  text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon);
 }
 
 .title {
@@ -77,6 +76,54 @@ body {
 .hud-title {
   font-size: clamp(1.2rem, 6vw, 2rem);
 }
+
+.logo-word {
+  --outline: #122150;
+  display: inline-flex;
+  gap: 0.04em;
+  align-items: center;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.logo-letter {
+  display: inline-block;
+  color: #fff;
+  -webkit-text-fill-color: currentColor;
+  -webkit-text-stroke: 2px var(--outline);
+  text-shadow:
+    0 2px 0 rgba(12, 22, 58, 0.95),
+    0 4px 0 rgba(8, 14, 42, 0.75),
+    0 7px 10px rgba(5, 9, 28, 0.5);
+  transform: translateY(-0.015em);
+}
+
+.logo-word--hero .logo-letter {
+  -webkit-text-stroke-width: 2.6px;
+  text-shadow:
+    0 2px 0 rgba(14, 25, 64, 0.98),
+    0 5px 0 rgba(10, 17, 48, 0.8),
+    0 9px 12px rgba(4, 8, 24, 0.55);
+}
+
+.logo-word--hud {
+  gap: 0.02em;
+}
+
+.logo-word--hud .logo-letter {
+  -webkit-text-stroke-width: 1.35px;
+  text-shadow:
+    0 1px 0 rgba(10, 20, 56, 0.9),
+    0 2px 5px rgba(6, 12, 36, 0.35);
+}
+
+.logo-letter.j { color: #42dcff; }
+.logo-letter.o { color: #ffd84b; }
+.logo-letter.t { color: #59ef7b; }
+.logo-letter.r { color: #ff6fe2; }
+.logo-letter.i { color: #9d8bff; }
+.logo-letter.s { color: #ff6c74; }
 
 .subtitle {
   color: #9ad2ff;
