@@ -5,7 +5,7 @@
   --neon-2: #ff4dff;
   --text: #d8f7ff;
   --danger: #ff6a8a;
-  --ui-reserve-h: 258px;
+  --ui-reserve-h: 120px;
 }
 
 * {
@@ -169,7 +169,7 @@ body {
 
 #board {
   display: block;
-  width: min(64vw, 300px, calc((100svh - var(--ui-reserve-h)) / 2));
+  width: min(72vw, 300px, calc((100svh - var(--ui-reserve-h)) / 2));
   aspect-ratio: 1 / 2;
   height: auto;
   margin: 0;
@@ -177,7 +177,7 @@ body {
 
 @supports (height: 100dvh) {
   #board {
-    width: min(64vw, 300px, calc((100dvh - var(--ui-reserve-h)) / 2));
+    width: min(72vw, 300px, calc((100dvh - var(--ui-reserve-h)) / 2));
   }
 }
 
@@ -218,7 +218,7 @@ body {
 
 @media (max-height: 700px) {
   :root {
-    --ui-reserve-h: 232px;
+    --ui-reserve-h: 100px;
   }
 
   .app {
@@ -243,7 +243,7 @@ body {
 
 @media (min-width: 760px) {
   :root {
-    --ui-reserve-h: 260px;
+    --ui-reserve-h: 120px;
   }
 
   .app {
