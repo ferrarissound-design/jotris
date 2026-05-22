@@ -89,10 +89,6 @@ body {
 .logo-letter {
   display: inline-block;
   position: relative;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  -webkit-background-clip: text;
   -webkit-text-stroke: 2.5px var(--outline);
   text-shadow:
     0 2px 0 rgba(20, 12, 38, 0.8),
@@ -113,12 +109,12 @@ body {
   mix-blend-mode: screen;
 }
 
-.logo-letter.j { background-image: linear-gradient(180deg, #ff9090 0%, #ff2020 56%, #cc0000 100%); }
-.logo-letter.o { background-image: linear-gradient(180deg, #ffd090 0%, #ff8800 56%, #dd5500 100%); }
-.logo-letter.t { background-image: linear-gradient(180deg, #ffff90 0%, #ffdd00 56%, #ccaa00 100%); }
-.logo-letter.r { background-image: linear-gradient(180deg, #90ff90 0%, #22dd22 56%, #009900 100%); }
-.logo-letter.i { background-image: linear-gradient(180deg, #90c0ff 0%, #2255ff 56%, #0033cc 100%); }
-.logo-letter.s { background-image: linear-gradient(180deg, #dd90ff 0%, #cc00ff 56%, #8800bb 100%); }
+.logo-letter.j { color: #ff2020; }
+.logo-letter.o { color: #ff8800; }
+.logo-letter.t { color: #ffdd00; }
+.logo-letter.r { color: #22dd22; }
+.logo-letter.i { color: #2255ff; }
+.logo-letter.s { color: #cc00ff; }
 
 .subtitle {
   color: #9ad2ff;
