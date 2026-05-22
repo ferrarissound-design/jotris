@@ -211,10 +211,22 @@ function hardDrop() {
   lockAndContinue();
 }
 
+function readHighScore() {
+  try {
+    return Number(localStorage.getItem('jotris_high_score') || 0);
+  } catch (_) {
+    return 0;
+  }
+}
+
 function saveHighScore() {
   if (state.score > state.highScore) {
     state.highScore = state.score;
-    localStorage.setItem('jotris_high_score', String(state.highScore));
+    try {
+      localStorage.setItem('jotris_high_score', String(state.highScore));
+    } catch (_) {
+      // ストレージが無効な環境でもゲーム進行を止めない
+    }
     updateScoreUI();
   }
 }
@@ -292,7 +304,7 @@ function resetGame() {
     level: 1,
     lines: 0,
     dropInterval: 1000,
-    highScore: Number(localStorage.getItem('jotris_high_score') || 0),
+    highScore: readHighScore(),
     gameOver: false,
   };
 
