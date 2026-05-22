@@ -67,7 +67,6 @@ body {
 .hud-title {
   margin: 0;
   letter-spacing: 0.08em;
-  text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon);
 }
 
 .title {
@@ -77,6 +76,49 @@ body {
 .hud-title {
   font-size: clamp(1.2rem, 6vw, 2rem);
 }
+
+.logo-word {
+  --outline: #1f1538;
+  display: inline-flex;
+  gap: 0.04em;
+  align-items: center;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.logo-letter {
+  display: inline-block;
+  position: relative;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-stroke: 2.5px var(--outline);
+  text-shadow:
+    0 2px 0 rgba(20, 12, 38, 0.8),
+    0 4px 8px rgba(9, 6, 20, 0.65);
+  transform: translateY(-0.01em);
+}
+
+.logo-letter::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 7%;
+  height: 34%;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.16));
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.logo-letter.j { background-image: linear-gradient(180deg, #7be8ff 0%, #00b7ff 56%, #0f57d8 100%); }
+.logo-letter.o { background-image: linear-gradient(180deg, #ffe76d 0%, #ffbe42 56%, #ef7b11 100%); }
+.logo-letter.t { background-image: linear-gradient(180deg, #91ff8e 0%, #38e868 56%, #0ca04a 100%); }
+.logo-letter.r { background-image: linear-gradient(180deg, #ff95ec 0%, #ff54d8 56%, #bc1fb6 100%); }
+.logo-letter.i { background-image: linear-gradient(180deg, #c0a9ff 0%, #8f73ff 56%, #5a34d6 100%); }
+.logo-letter.s { background-image: linear-gradient(180deg, #ff8e8e 0%, #ff5757 56%, #c81f38 100%); }
 
 .subtitle {
   color: #9ad2ff;
