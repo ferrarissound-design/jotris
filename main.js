@@ -579,14 +579,10 @@ function displayBlockSize() {
 }
 
 function handleTouchStart(e) {
-  if (!titleScreen.classList.contains('active') && !gameScreen.classList.contains('active')) return;
+  if (!gameScreen.classList.contains('active')) return;
   if (e.target.tagName === 'BUTTON') return;
   if (e.touches.length !== 1) return;
   e.preventDefault();
-  if (titleScreen.classList.contains('active')) {
-    startGame();
-    return;
-  }
   const t = e.touches[0];
   touchStart = { x: t.clientX, y: t.clientY, time: Date.now() };
   touchLastX = t.clientX;
@@ -640,13 +636,17 @@ function handleTouchEnd(e) {
   touchStart = null;
 }
 
-document.addEventListener('click', (e) => {
-  if (titleScreen.classList.contains('active')) startGame();
-});
 restartBtn.addEventListener('click', resetGame);
 pauseBtn.addEventListener('click', togglePause);
 
 document.addEventListener('keydown', handleKeyDown);
+
+// タイトル画面: タッチ・クリックいずれでもゲーム開始
+titleScreen.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  startGame();
+}, { passive: false });
+titleScreen.addEventListener('click', startGame);
 
 // documentに登録: iOS Safariは非インタラクティブ要素のtouchstartを発火しないため
 document.addEventListener('touchstart', handleTouchStart, { passive: false });
