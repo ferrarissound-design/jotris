@@ -57,6 +57,8 @@ const scoreByLines = [0, 100, 300, 500, 800];
 
 const boardCanvas = document.getElementById('board');
 const boardCtx = boardCanvas.getContext('2d');
+const holdCanvas = document.getElementById('hold');
+const holdCtx = holdCanvas.getContext('2d');
 const nextCanvas = document.getElementById('next');
 const nextCtx = nextCanvas.getContext('2d');
 
@@ -155,6 +157,7 @@ function lockAndContinue() {
   clearLines();
   state.piece = state.next;
   state.next = spawnPiece(randomType());
+  state.holdUsed = false;
 
   if (collides(state.board, state.piece)) {
     state.gameOver = true;
@@ -168,6 +171,35 @@ function updateScoreUI() {
   levelEl.textContent = String(state.level);
   linesEl.textContent = String(state.lines);
   highScoreEl.textContent = String(state.highScore);
+}
+
+function holdPiece() {
+  if (state.gameOver || state.paused || state.holdUsed) return;
+  state.holdUsed = true;
+  if (state.hold === null) {
+    state.hold = state.piece.type;
+    state.piece = state.next;
+    state.next = spawnPiece(randomType());
+  } else {
+    const temp = state.hold;
+    state.hold = state.piece.type;
+    state.piece = spawnPiece(temp);
+  }
+}
+
+function drawHold() {
+  holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
+  if (!state.hold) return;
+  const size = 24;
+  const matrix = SHAPES[state.hold];
+  const offsetX = Math.floor((holdCanvas.width / size - matrix[0].length) / 2);
+  const offsetY = Math.floor((holdCanvas.height / size - matrix.length) / 2);
+  const color = state.holdUsed ? 'rgba(180,180,180,0.35)' : COLORS[state.hold];
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) drawCell(holdCtx, x + offsetX, y + offsetY, color, size);
+    });
+  });
 }
 
 function togglePause() {
@@ -367,6 +399,7 @@ function gameLoop(time = 0) {
   }
 
   drawBoard();
+  drawHold();
   drawNext();
   updateScoreUI();
 
@@ -387,6 +420,8 @@ function resetGame() {
     highScore: readHighScore(),
     gameOver: false,
     paused: false,
+    hold: null,
+    holdUsed: false,
   };
 
   pauseBtn.textContent = '一時停止';
@@ -407,12 +442,12 @@ function handleKeyDown(event) {
   if (!gameScreen.classList.contains('active')) return;
 
   const key = event.key;
-  if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' ', 'Enter', 'r', 'R', 'p', 'P'].includes(key)) {
+  if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' ', 'Enter', 'r', 'R', 'p', 'P', 'c', 'C'].includes(key)) {
     event.preventDefault();
   }
 
-  // 長押しリピートで回転/ハードドロップ/ポーズが連続発火しないようにする
-  if (event.repeat && (key === 'ArrowUp' || key === ' ' || key === 'Enter' || key.toLowerCase() === 'r' || key.toLowerCase() === 'p')) {
+  // 長押しリピートで回転/ハードドロップ/ポーズ/ホールドが連続発火しないようにする
+  if (event.repeat && (key === 'ArrowUp' || key === ' ' || key === 'Enter' || key.toLowerCase() === 'r' || key.toLowerCase() === 'p' || key.toLowerCase() === 'c')) {
     return;
   }
 
@@ -423,6 +458,7 @@ function handleKeyDown(event) {
   else if (key === 'Enter') hardDrop();
   else if (key.toLowerCase() === 'r') resetGame();
   else if (key.toLowerCase() === 'p') togglePause();
+  else if (key.toLowerCase() === 'c') holdPiece();
 }
 
 // タッチジェスチャー: タップ→回転、左右スワイプ→移動、下スワイプ→ハードドロップ
@@ -481,6 +517,8 @@ function handleTouchEnd(e) {
     rotate();
   } else if (dy > 50 && Math.abs(dy) > Math.abs(dx) * 1.2) {
     hardDrop();
+  } else if (dy < -50 && Math.abs(dy) > Math.abs(dx) * 1.2) {
+    holdPiece();
   }
   touchStart = null;
 }
