@@ -64,6 +64,7 @@ const titleScreen = document.getElementById('title-screen');
 const gameScreen = document.getElementById('game-screen');
 const startBtn = document.getElementById('start-btn');
 const restartBtn = document.getElementById('restart-btn');
+const pauseBtn = document.getElementById('pause-btn');
 const messageEl = document.getElementById('message');
 
 const scoreEl = document.getElementById('score');
@@ -171,8 +172,15 @@ function updateScoreUI() {
   highScoreEl.textContent = String(state.highScore);
 }
 
-function move(dx, dy) {
+function togglePause() {
   if (state.gameOver) return;
+  state.paused = !state.paused;
+  pauseBtn.textContent = state.paused ? '再開' : '一時停止';
+  if (state.paused) dropCounter = 0;
+}
+
+function move(dx, dy) {
+  if (state.gameOver || state.paused) return;
   state.piece.x += dx;
   state.piece.y += dy;
   if (collides(state.board, state.piece)) {
@@ -185,7 +193,7 @@ function move(dx, dy) {
 }
 
 function rotate() {
-  if (state.gameOver) return;
+  if (state.gameOver || state.paused) return;
 
   const originalShape = state.piece.shape;
   const originalX = state.piece.x;
@@ -219,7 +227,7 @@ function rotate() {
 }
 
 function hardDrop() {
-  if (state.gameOver) return;
+  if (state.gameOver || state.paused) return;
 
   let droppedRows = 0;
   while (!collides(state.board, state.piece)) {
@@ -284,6 +292,16 @@ function drawBoard() {
       }
     });
   });
+
+  if (state.paused) {
+    boardCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+    boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
+    boardCtx.fillStyle = '#2ff3ff';
+    boardCtx.font = 'bold 48px "Segoe UI", sans-serif';
+    boardCtx.textAlign = 'center';
+    boardCtx.textBaseline = 'middle';
+    boardCtx.fillText('PAUSED', boardCanvas.width / 2, boardCanvas.height / 2);
+  }
 }
 
 function drawNext() {
@@ -304,7 +322,7 @@ function gameLoop(time = 0) {
   const delta = time - lastTime;
   lastTime = time;
 
-  if (!state.gameOver) {
+  if (!state.gameOver && !state.paused) {
     dropCounter += delta;
     if (dropCounter >= state.dropInterval) {
       move(0, 1);
@@ -332,8 +350,10 @@ function resetGame() {
     dropInterval: 1000,
     highScore: readHighScore(),
     gameOver: false,
+    paused: false,
   };
 
+  pauseBtn.textContent = '一時停止';
   messageEl.textContent = '';
   dropCounter = 0;
   lastTime = 0;
@@ -351,12 +371,12 @@ function handleKeyDown(event) {
   if (!gameScreen.classList.contains('active')) return;
 
   const key = event.key;
-  if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' ', 'Enter', 'r', 'R'].includes(key)) {
+  if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' ', 'Enter', 'r', 'R', 'p', 'P'].includes(key)) {
     event.preventDefault();
   }
 
-  // 長押しリピートで回転/ハードドロップが連続発火しないようにする
-  if (event.repeat && (key === 'ArrowUp' || key === ' ' || key === 'Enter' || key.toLowerCase() === 'r')) {
+  // 長押しリピートで回転/ハードドロップ/ポーズが連続発火しないようにする
+  if (event.repeat && (key === 'ArrowUp' || key === ' ' || key === 'Enter' || key.toLowerCase() === 'r' || key.toLowerCase() === 'p')) {
     return;
   }
 
@@ -366,6 +386,7 @@ function handleKeyDown(event) {
   else if (key === 'ArrowUp' || key === ' ') rotate();
   else if (key === 'Enter') hardDrop();
   else if (key.toLowerCase() === 'r') resetGame();
+  else if (key.toLowerCase() === 'p') togglePause();
 }
 
 function handleControl(action) {
@@ -386,6 +407,7 @@ function handleButtonPress(event) {
 
 startBtn.addEventListener('click', startGame);
 restartBtn.addEventListener('click', resetGame);
+pauseBtn.addEventListener('click', togglePause);
 
 document.addEventListener('keydown', handleKeyDown);
 controls.addEventListener('click', handleButtonPress);
