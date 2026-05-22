@@ -301,20 +301,20 @@ function drawBoard() {
   ghost.y -= 1;
 
   if (ghost.y !== state.piece.y) {
-    boardCtx.strokeStyle = COLORS[state.piece.type];
-    boardCtx.lineWidth = 2;
-    boardCtx.globalAlpha = 0.35;
     ghost.shape.forEach((row, y) => {
       row.forEach((value, x) => {
         if (!value) return;
         const drawY = ghost.y + y;
         if (drawY >= 0) {
-          boardCtx.strokeRect(
-            (ghost.x + x) * BLOCK + 2,
-            drawY * BLOCK + 2,
-            BLOCK - 4,
-            BLOCK - 4
-          );
+          const px = (ghost.x + x) * BLOCK;
+          const py = drawY * BLOCK;
+          boardCtx.globalAlpha = 0.18;
+          boardCtx.fillStyle = COLORS[state.piece.type];
+          boardCtx.fillRect(px + 1, py + 1, BLOCK - 2, BLOCK - 2);
+          boardCtx.globalAlpha = 0.65;
+          boardCtx.strokeStyle = COLORS[state.piece.type];
+          boardCtx.lineWidth = 2;
+          boardCtx.strokeRect(px + 2, py + 2, BLOCK - 4, BLOCK - 4);
         }
       });
     });
