@@ -154,8 +154,10 @@ function clearLines() {
   }
 
   if (cleared > 0) {
+    state.combo += 1;
     state.lines += cleared;
-    state.score += (scoreByLines[cleared] || 0) * state.level;
+    const comboBonus = state.combo >= 2 ? (state.combo - 1) * 50 * state.level : 0;
+    state.score += (scoreByLines[cleared] || 0) * state.level + comboBonus;
     const nextLevel = Math.floor(state.lines / 10) + 1;
     state.level = nextLevel;
     state.dropInterval = Math.max(1000 - (state.level - 1) * 80, 120);
@@ -165,14 +167,18 @@ function clearLines() {
       timer: 500,
       rows: clearedRows,
       label: labels[cleared] || `${cleared} LINES`,
+      combo: state.combo,
     };
     if (navigator.vibrate) navigator.vibrate(cleared === 4 ? [60, 30, 60] : [30]);
   }
+
+  return cleared;
 }
 
 function lockAndContinue() {
   mergePiece();
-  clearLines();
+  const cleared = clearLines();
+  if (cleared === 0) state.combo = 0;
   state.piece = state.nextQueue.shift();
   state.nextQueue.push(spawnPiece(nextType()));
 
@@ -388,14 +394,24 @@ function drawBoard() {
       boardCtx.fillStyle = `rgba(255, 255, 255, ${progress * 0.75})`;
       boardCtx.fillRect(0, rowY * BLOCK, boardCanvas.width, BLOCK);
     });
+    const fontSize = Math.round(BLOCK * 1.3);
     boardCtx.globalAlpha = Math.min(1, progress * 2);
     boardCtx.fillStyle = '#2ff3ff';
     boardCtx.shadowColor = '#2ff3ff';
     boardCtx.shadowBlur = 24;
-    boardCtx.font = `bold ${Math.round(BLOCK * 1.3)}px "Segoe UI", sans-serif`;
+    boardCtx.font = `bold ${fontSize}px "Segoe UI", sans-serif`;
     boardCtx.textAlign = 'center';
     boardCtx.textBaseline = 'middle';
-    boardCtx.fillText(state.lineEffect.label, boardCanvas.width / 2, boardCanvas.height / 2);
+    const centerY = state.lineEffect.combo >= 2
+      ? boardCanvas.height / 2 - fontSize * 0.6
+      : boardCanvas.height / 2;
+    boardCtx.fillText(state.lineEffect.label, boardCanvas.width / 2, centerY);
+    if (state.lineEffect.combo >= 2) {
+      boardCtx.fillStyle = '#ff4dff';
+      boardCtx.shadowColor = '#ff4dff';
+      boardCtx.font = `bold ${Math.round(fontSize * 0.75)}px "Segoe UI", sans-serif`;
+      boardCtx.fillText(`COMBO x${state.lineEffect.combo}`, boardCanvas.width / 2, centerY + fontSize * 1.2);
+    }
     boardCtx.shadowBlur = 0;
     boardCtx.globalAlpha = 1;
   }
@@ -468,6 +484,7 @@ function resetGame() {
     gameOver: false,
     paused: false,
     hold: null,
+    combo: 0,
     lineEffect: null,
   };
 
