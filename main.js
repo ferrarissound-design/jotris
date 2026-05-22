@@ -435,7 +435,10 @@ function displayBlockSize() {
 }
 
 function handleTouchStart(e) {
+  // ボタン上のタッチはゲーム操作に使わない
+  if (e.target.tagName === 'BUTTON') return;
   if (e.touches.length !== 1) return;
+  e.preventDefault();
   const t = e.touches[0];
   touchStart = { x: t.clientX, y: t.clientY, time: Date.now() };
   touchLastX = t.clientX;
@@ -443,8 +446,9 @@ function handleTouchStart(e) {
 }
 
 function handleTouchMove(e) {
+  if (!touchStart) return;
   e.preventDefault();
-  if (!touchStart || e.touches.length !== 1 || !state || state.gameOver || state.paused) return;
+  if (e.touches.length !== 1 || !state || state.gameOver || state.paused) return;
   const t = e.touches[0];
   const blockSize = displayBlockSize();
   touchAccX += t.clientX - touchLastX;
@@ -472,6 +476,8 @@ restartBtn.addEventListener('click', resetGame);
 pauseBtn.addEventListener('click', togglePause);
 
 document.addEventListener('keydown', handleKeyDown);
-boardCanvas.addEventListener('touchstart', handleTouchStart, { passive: true });
-boardCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-boardCanvas.addEventListener('touchend', handleTouchEnd);
+
+// ゲーム画面全体をタッチエリアに（canvasのみだとiOS Safariで取りこぼしが起きる）
+gameScreen.addEventListener('touchstart', handleTouchStart, { passive: false });
+gameScreen.addEventListener('touchmove', handleTouchMove, { passive: false });
+gameScreen.addEventListener('touchend', handleTouchEnd);

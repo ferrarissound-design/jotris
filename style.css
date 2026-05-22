@@ -239,6 +239,9 @@ body {
 
 #board {
   cursor: pointer;
+}
+
+#game-screen {
   touch-action: none;
 }
 
