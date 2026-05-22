@@ -313,6 +313,7 @@ function readHighScore() {
 function saveHighScore() {
   if (state.score > state.highScore) {
     state.highScore = state.score;
+    state.newRecord = true;
     try {
       localStorage.setItem('jotris_high_score', String(state.highScore));
     } catch (_) {
@@ -416,7 +417,49 @@ function drawBoard() {
     boardCtx.globalAlpha = 1;
   }
 
-  if (state.paused) {
+  if (state.gameOver) {
+    const cx = boardCanvas.width / 2;
+    boardCtx.fillStyle = 'rgba(0, 0, 0, 0.78)';
+    boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
+    boardCtx.textAlign = 'center';
+    boardCtx.textBaseline = 'middle';
+
+    boardCtx.fillStyle = '#ff6a8a';
+    boardCtx.shadowColor = '#ff6a8a';
+    boardCtx.shadowBlur = 22;
+    boardCtx.font = 'bold 44px "Segoe UI", sans-serif';
+    boardCtx.fillText('GAME OVER', cx, 145);
+    boardCtx.shadowBlur = 0;
+
+    boardCtx.fillStyle = '#a7dfff';
+    boardCtx.font = '15px "Segoe UI", sans-serif';
+    boardCtx.fillText('SCORE', cx, 215);
+    boardCtx.fillStyle = '#d8f7ff';
+    boardCtx.font = 'bold 38px "Segoe UI", sans-serif';
+    boardCtx.fillText(String(state.score), cx, 252);
+
+    boardCtx.fillStyle = '#a7dfff';
+    boardCtx.font = '15px "Segoe UI", sans-serif';
+    boardCtx.fillText('HI-SCORE', cx, 305);
+    boardCtx.fillStyle = '#d8f7ff';
+    boardCtx.font = 'bold 32px "Segoe UI", sans-serif';
+    boardCtx.fillText(String(state.highScore), cx, 338);
+
+    if (state.newRecord) {
+      boardCtx.fillStyle = '#f0f000';
+      boardCtx.shadowColor = '#f0f000';
+      boardCtx.shadowBlur = 16;
+      boardCtx.font = 'bold 20px "Segoe UI", sans-serif';
+      boardCtx.fillText('★ NEW RECORD! ★', cx, 378);
+      boardCtx.shadowBlur = 0;
+    }
+
+    if (Math.floor(Date.now() / 600) % 2 === 0) {
+      boardCtx.fillStyle = '#a7dfff';
+      boardCtx.font = '14px "Segoe UI", sans-serif';
+      boardCtx.fillText('タップ / R でリスタート', cx, 530);
+    }
+  } else if (state.paused) {
     boardCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
     boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
     boardCtx.fillStyle = '#2ff3ff';
@@ -486,6 +529,7 @@ function resetGame() {
     hold: null,
     combo: 0,
     lineEffect: null,
+    newRecord: false,
   };
 
   pauseBtn.textContent = '一時停止';
@@ -578,6 +622,11 @@ function handleTouchEnd(e) {
   const dx = t.clientX - touchStart.x;
   const dy = t.clientY - touchStart.y;
   const dt = Date.now() - touchStart.time;
+  if (state.gameOver) {
+    if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && dt < 300) resetGame();
+    touchStart = null;
+    return;
+  }
   if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && dt < 300) {
     rotate();
   } else if (dy > 50 && Math.abs(dy) > Math.abs(dx) * 1.2) {
