@@ -1,4 +1,4 @@
-# ジョトリス (Jotris)
+# JOTRIS
 
 HTML / CSS / JavaScript だけで作った、スマホ対応のテトリス風ブラウザゲームです。  
 GitHub Pages でそのまま公開できます。
