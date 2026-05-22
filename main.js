@@ -266,10 +266,22 @@ function saveHighScore() {
 }
 
 function drawCell(ctx, x, y, color, size) {
+  const px = x * size;
+  const py = y * size;
+  const gap = 1;
+  const b = Math.round(size * 0.14);
+  const inner = size - gap * 2;
+
   ctx.fillStyle = color;
-  ctx.fillRect(x * size, y * size, size, size);
-  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-  ctx.strokeRect(x * size, y * size, size, size);
+  ctx.fillRect(px + gap, py + gap, inner, inner);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.42)';
+  ctx.fillRect(px + gap, py + gap, inner, b);
+  ctx.fillRect(px + gap, py + gap, b, inner);
+
+  ctx.fillStyle = 'rgba(0,0,0,0.32)';
+  ctx.fillRect(px + gap, py + size - gap - b, inner, b);
+  ctx.fillRect(px + size - gap - b, py + gap, b, inner);
 }
 
 function drawBoard() {
