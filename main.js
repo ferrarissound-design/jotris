@@ -190,7 +190,6 @@ function rotate() {
   const rotated = rotateMatrix(original);
   state.piece.shape = rotated;
 
-  // 最小限の壁蹴り
   const offsets = [0, -1, 1, -2, 2];
   for (const offset of offsets) {
     state.piece.x += offset;
@@ -327,6 +326,7 @@ function handleKeyDown(event) {
 }
 
 function handleControl(action) {
+  if (!state) return;
   if (action === 'left') move(-1, 0);
   if (action === 'right') move(1, 0);
   if (action === 'down') move(0, 1);
@@ -334,16 +334,31 @@ function handleControl(action) {
   if (action === 'drop') hardDrop();
 }
 
-startBtn.addEventListener('click', startGame);
-restartBtn.addEventListener('click', resetGame);
-document.addEventListener('keydown', handleKeyDown);
-controls.addEventListener('click', (event) => {
+function handleButtonPress(event) {
   const btn = event.target.closest('button[data-action]');
   if (!btn) return;
+  event.preventDefault();
   handleControl(btn.dataset.action);
-});
+}
 
-// タッチ端末向け: スクロールやズームの誤作動を抑制
-['touchstart', 'touchmove'].forEach((evt) => {
+startBtn.addEventListener('click', startGame);
+startBtn.addEventListener('touchend', (event) => {
+  event.preventDefault();
+  startGame();
+}, { passive: false });
+
+restartBtn.addEventListener('click', resetGame);
+restartBtn.addEventListener('touchend', (event) => {
+  event.preventDefault();
+  resetGame();
+}, { passive: false });
+
+document.addEventListener('keydown', handleKeyDown);
+controls.addEventListener('click', handleButtonPress);
+controls.addEventListener('touchend', handleButtonPress, { passive: false });
+controls.addEventListener('pointerup', handleButtonPress);
+
+// タッチ端末向け: 操作ボタン周辺のスクロールやズームの誤作動を抑制
+['touchmove'].forEach((evt) => {
   controls.addEventListener(evt, (e) => e.preventDefault(), { passive: false });
 });
