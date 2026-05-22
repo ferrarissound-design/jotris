@@ -195,10 +195,14 @@ body {
   text-align: center;
 }
 
-#hold,
-#next {
+#hold {
   width: 60px;
   height: 60px;
+}
+
+#next {
+  width: 60px;
+  height: 180px;
 }
 
 .secondary-btn {
@@ -271,10 +275,14 @@ body {
     font-size: 1rem;
   }
 
-  #hold,
-  #next {
+  #hold {
     width: 88px;
     height: 88px;
+  }
+
+  #next {
+    width: 88px;
+    height: 264px;
   }
 
   .secondary-btn {

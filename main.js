@@ -163,8 +163,8 @@ function clearLines() {
 function lockAndContinue() {
   mergePiece();
   clearLines();
-  state.piece = state.next;
-  state.next = spawnPiece(nextType());
+  state.piece = state.nextQueue.shift();
+  state.nextQueue.push(spawnPiece(nextType()));
 
   if (collides(state.board, state.piece)) {
     state.gameOver = true;
@@ -184,8 +184,8 @@ function holdPiece() {
   if (state.gameOver || state.paused) return;
   if (state.hold === null) {
     state.hold = state.piece.type;
-    state.piece = state.next;
-    state.next = spawnPiece(nextType());
+    state.piece = state.nextQueue.shift();
+    state.nextQueue.push(spawnPiece(nextType()));
   } else {
     const temp = state.hold;
     state.hold = state.piece.type;
@@ -385,14 +385,16 @@ function drawBoard() {
 
 function drawNext() {
   nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
-  const size = 24;
-  const matrix = state.next.shape;
-  const offsetX = Math.floor((nextCanvas.width / size - matrix[0].length) / 2);
-  const offsetY = Math.floor((nextCanvas.height / size - matrix.length) / 2);
-
-  matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value) drawCell(nextCtx, x + offsetX, y + offsetY, COLORS[state.next.type], size);
+  const size = 20;
+  const sectionH = nextCanvas.height / 3;
+  state.nextQueue.forEach((piece, i) => {
+    const matrix = piece.shape;
+    const offsetX = Math.floor((nextCanvas.width / size - matrix[0].length) / 2);
+    const offsetY = Math.round((i * sectionH + (sectionH - matrix.length * size) / 2) / size);
+    matrix.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (value) drawCell(nextCtx, x + offsetX, y + offsetY, COLORS[piece.type], size);
+      });
     });
   });
 }
@@ -424,7 +426,7 @@ function resetGame() {
   state = {
     board: createBoard(),
     piece: spawnPiece(nextType()),
-    next: spawnPiece(nextType()),
+    nextQueue: [spawnPiece(nextType()), spawnPiece(nextType()), spawnPiece(nextType())],
     score: 0,
     level: 1,
     lines: 0,
