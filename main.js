@@ -583,6 +583,10 @@ function handleTouchStart(e) {
   if (e.target.tagName === 'BUTTON') return;
   if (e.touches.length !== 1) return;
   e.preventDefault();
+  if (titleScreen.classList.contains('active')) {
+    startGame();
+    return;
+  }
   const t = e.touches[0];
   touchStart = { x: t.clientX, y: t.clientY, time: Date.now() };
   touchLastX = t.clientX;
@@ -621,11 +625,6 @@ function handleTouchEnd(e) {
   const dx = t.clientX - touchStart.x;
   const dy = t.clientY - touchStart.y;
   const dt = Date.now() - touchStart.time;
-  if (titleScreen.classList.contains('active')) {
-    if (Math.abs(dx) < 20 && Math.abs(dy) < 20 && dt < 500) startGame();
-    touchStart = null;
-    return;
-  }
   if (state.gameOver) {
     if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && dt < 300) resetGame();
     touchStart = null;
