@@ -157,7 +157,6 @@ function lockAndContinue() {
   clearLines();
   state.piece = state.next;
   state.next = spawnPiece(randomType());
-  state.holdUsed = false;
 
   if (collides(state.board, state.piece)) {
     state.gameOver = true;
@@ -174,8 +173,7 @@ function updateScoreUI() {
 }
 
 function holdPiece() {
-  if (state.gameOver || state.paused || state.holdUsed) return;
-  state.holdUsed = true;
+  if (state.gameOver || state.paused) return;
   if (state.hold === null) {
     state.hold = state.piece.type;
     state.piece = state.next;
@@ -194,7 +192,7 @@ function drawHold() {
   const matrix = SHAPES[state.hold];
   const offsetX = Math.floor((holdCanvas.width / size - matrix[0].length) / 2);
   const offsetY = Math.floor((holdCanvas.height / size - matrix.length) / 2);
-  const color = state.holdUsed ? 'rgba(180,180,180,0.35)' : COLORS[state.hold];
+  const color = COLORS[state.hold];
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value) drawCell(holdCtx, x + offsetX, y + offsetY, color, size);
@@ -421,7 +419,6 @@ function resetGame() {
     gameOver: false,
     paused: false,
     hold: null,
-    holdUsed: false,
   };
 
   pauseBtn.textContent = '一時停止';
