@@ -186,28 +186,54 @@ function move(dx, dy) {
 
 function rotate() {
   if (state.gameOver) return;
-  const original = state.piece.shape;
-  const rotated = rotateMatrix(original);
-  state.piece.shape = rotated;
 
-  const offsets = [0, -1, 1, -2, 2];
-  for (const offset of offsets) {
-    state.piece.x += offset;
+  const originalShape = state.piece.shape;
+  const originalX = state.piece.x;
+  const originalY = state.piece.y;
+  state.piece.shape = rotateMatrix(originalShape);
+
+  // 壁・床付近でも回転しやすいように簡易キックを試す
+  const kicks = [
+    { x: 0, y: 0 },
+    { x: -1, y: 0 },
+    { x: 1, y: 0 },
+    { x: -2, y: 0 },
+    { x: 2, y: 0 },
+    { x: 0, y: -1 },
+    { x: -1, y: -1 },
+    { x: 1, y: -1 },
+    { x: 0, y: -2 },
+  ];
+
+  for (const kick of kicks) {
+    state.piece.x = originalX + kick.x;
+    state.piece.y = originalY + kick.y;
     if (!collides(state.board, state.piece)) {
       return;
     }
-    state.piece.x -= offset;
   }
 
-  state.piece.shape = original;
+  state.piece.shape = originalShape;
+  state.piece.x = originalX;
+  state.piece.y = originalY;
 }
 
 function hardDrop() {
   if (state.gameOver) return;
+
+  let droppedRows = 0;
   while (!collides(state.board, state.piece)) {
     state.piece.y += 1;
+    droppedRows += 1;
   }
+
+  // 最後の1歩は衝突しているので戻す
   state.piece.y -= 1;
+  droppedRows = Math.max(0, droppedRows - 1);
+
+  // ハードドロップの落下距離に応じたボーナス
+  state.score += droppedRows * 2;
+
   lockAndContinue();
 }
 
@@ -329,6 +355,11 @@ function handleKeyDown(event) {
     event.preventDefault();
   }
 
+  // 長押しリピートで回転/ハードドロップが連続発火しないようにする
+  if (event.repeat && (key === 'ArrowUp' || key === ' ' || key === 'Enter' || key.toLowerCase() === 'r')) {
+    return;
+  }
+
   if (key === 'ArrowLeft') move(-1, 0);
   else if (key === 'ArrowRight') move(1, 0);
   else if (key === 'ArrowDown') move(0, 1);
@@ -354,21 +385,10 @@ function handleButtonPress(event) {
 }
 
 startBtn.addEventListener('click', startGame);
-startBtn.addEventListener('touchend', (event) => {
-  event.preventDefault();
-  startGame();
-}, { passive: false });
-
 restartBtn.addEventListener('click', resetGame);
-restartBtn.addEventListener('touchend', (event) => {
-  event.preventDefault();
-  resetGame();
-}, { passive: false });
 
 document.addEventListener('keydown', handleKeyDown);
 controls.addEventListener('click', handleButtonPress);
-controls.addEventListener('touchend', handleButtonPress, { passive: false });
-controls.addEventListener('pointerup', handleButtonPress);
 
 // タッチ端末向け: 操作ボタン周辺のスクロールやズームの誤作動を抑制
 ['touchmove'].forEach((evt) => {
