@@ -429,6 +429,7 @@ function handleKeyDown(event) {
 let touchStart = null;
 let touchLastX = 0;
 let touchAccX = 0;
+let touchAxis = null; // 'h'=横操作確定 / 'v'=縦操作確定
 
 function displayBlockSize() {
   return boardCanvas.getBoundingClientRect().width / COLS;
@@ -443,6 +444,7 @@ function handleTouchStart(e) {
   touchStart = { x: t.clientX, y: t.clientY, time: Date.now() };
   touchLastX = t.clientX;
   touchAccX = 0;
+  touchAxis = null;
 }
 
 function handleTouchMove(e) {
@@ -450,11 +452,23 @@ function handleTouchMove(e) {
   e.preventDefault();
   if (e.touches.length !== 1 || !state || state.gameOver || state.paused) return;
   const t = e.touches[0];
-  const blockSize = displayBlockSize();
-  touchAccX += t.clientX - touchLastX;
+
+  // スワイプ方向が未確定なら累積距離で確定する
+  if (!touchAxis) {
+    const adx = Math.abs(t.clientX - touchStart.x);
+    const ady = Math.abs(t.clientY - touchStart.y);
+    if (adx > 8 || ady > 8) touchAxis = ady > adx ? 'v' : 'h';
+  }
+
+  // 縦スワイプ確定中は横移動しない
+  if (touchAxis === 'h') {
+    const blockSize = displayBlockSize();
+    touchAccX += t.clientX - touchLastX;
+    while (touchAccX >= blockSize) { move(1, 0); touchAccX -= blockSize; }
+    while (touchAccX <= -blockSize) { move(-1, 0); touchAccX += blockSize; }
+  }
+
   touchLastX = t.clientX;
-  while (touchAccX >= blockSize) { move(1, 0); touchAccX -= blockSize; }
-  while (touchAccX <= -blockSize) { move(-1, 0); touchAccX += blockSize; }
 }
 
 function handleTouchEnd(e) {
