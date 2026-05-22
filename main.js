@@ -435,7 +435,7 @@ function displayBlockSize() {
 }
 
 function handleTouchStart(e) {
-  // ボタン上のタッチはゲーム操作に使わない
+  if (!gameScreen.classList.contains('active')) return;
   if (e.target.tagName === 'BUTTON') return;
   if (e.touches.length !== 1) return;
   e.preventDefault();
@@ -477,7 +477,7 @@ pauseBtn.addEventListener('click', togglePause);
 
 document.addEventListener('keydown', handleKeyDown);
 
-// ゲーム画面全体をタッチエリアに（canvasのみだとiOS Safariで取りこぼしが起きる）
-gameScreen.addEventListener('touchstart', handleTouchStart, { passive: false });
-gameScreen.addEventListener('touchmove', handleTouchMove, { passive: false });
-gameScreen.addEventListener('touchend', handleTouchEnd);
+// documentに登録: iOS Safariは非インタラクティブ要素のtouchstartを発火しないため
+document.addEventListener('touchstart', handleTouchStart, { passive: false });
+document.addEventListener('touchmove', handleTouchMove, { passive: false });
+document.addEventListener('touchend', handleTouchEnd);
