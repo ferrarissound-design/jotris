@@ -29,6 +29,10 @@ body {
   overscroll-behavior: none;
 }
 
+body:has(#title-screen.active) {
+  background: linear-gradient(160deg, #b3e5fc 0%, #81d4fa 60%, #4fc3f7 100%);
+}
+
 .app {
   height: 100svh;
   padding: max(8px, env(safe-area-inset-top)) 10px max(8px, env(safe-area-inset-bottom));
