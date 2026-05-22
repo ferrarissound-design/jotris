@@ -186,20 +186,36 @@ function move(dx, dy) {
 
 function rotate() {
   if (state.gameOver) return;
-  const original = state.piece.shape;
-  const rotated = rotateMatrix(original);
-  state.piece.shape = rotated;
 
-  const offsets = [0, -1, 1, -2, 2];
-  for (const offset of offsets) {
-    state.piece.x += offset;
+  const originalShape = state.piece.shape;
+  const originalX = state.piece.x;
+  const originalY = state.piece.y;
+  state.piece.shape = rotateMatrix(originalShape);
+
+  // 壁・床付近でも回転しやすいように簡易キックを試す
+  const kicks = [
+    { x: 0, y: 0 },
+    { x: -1, y: 0 },
+    { x: 1, y: 0 },
+    { x: -2, y: 0 },
+    { x: 2, y: 0 },
+    { x: 0, y: -1 },
+    { x: -1, y: -1 },
+    { x: 1, y: -1 },
+    { x: 0, y: -2 },
+  ];
+
+  for (const kick of kicks) {
+    state.piece.x = originalX + kick.x;
+    state.piece.y = originalY + kick.y;
     if (!collides(state.board, state.piece)) {
       return;
     }
-    state.piece.x -= offset;
   }
 
-  state.piece.shape = original;
+  state.piece.shape = originalShape;
+  state.piece.x = originalX;
+  state.piece.y = originalY;
 }
 
 function hardDrop() {
