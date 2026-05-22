@@ -295,6 +295,32 @@ function drawBoard() {
     });
   });
 
+  // ゴーストピース: 落下先を半透明の枠で表示
+  const ghost = { ...state.piece, y: state.piece.y };
+  while (!collides(state.board, ghost)) ghost.y += 1;
+  ghost.y -= 1;
+
+  if (ghost.y !== state.piece.y) {
+    boardCtx.strokeStyle = COLORS[state.piece.type];
+    boardCtx.lineWidth = 2;
+    boardCtx.globalAlpha = 0.35;
+    ghost.shape.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (!value) return;
+        const drawY = ghost.y + y;
+        if (drawY >= 0) {
+          boardCtx.strokeRect(
+            (ghost.x + x) * BLOCK + 2,
+            drawY * BLOCK + 2,
+            BLOCK - 4,
+            BLOCK - 4
+          );
+        }
+      });
+    });
+    boardCtx.globalAlpha = 1;
+  }
+
   state.piece.shape.forEach((row, y) => {
     row.forEach((value, x) => {
       if (!value) return;
