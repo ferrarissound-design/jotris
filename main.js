@@ -183,6 +183,11 @@ function holdPiece() {
     state.hold = state.piece.type;
     state.piece = spawnPiece(temp);
   }
+  if (collides(state.board, state.piece)) {
+    state.gameOver = true;
+    messageEl.textContent = 'GAME OVER - Rでリスタート';
+    saveHighScore();
+  }
 }
 
 function drawHold() {
@@ -496,6 +501,7 @@ function handleTouchMove(e) {
   // 縦スワイプ確定中は横移動しない
   if (touchAxis === 'h') {
     const blockSize = displayBlockSize();
+    if (blockSize <= 0) return;
     touchAccX += t.clientX - touchLastX;
     while (touchAccX >= blockSize) { move(1, 0); touchAccX -= blockSize; }
     while (touchAccX <= -blockSize) { move(-1, 0); touchAccX += blockSize; }
@@ -505,7 +511,7 @@ function handleTouchMove(e) {
 }
 
 function handleTouchEnd(e) {
-  if (!touchStart || e.changedTouches.length !== 1) return;
+  if (!touchStart || e.changedTouches.length !== 1 || e.touches.length !== 0) return;
   const t = e.changedTouches[0];
   const dx = t.clientX - touchStart.x;
   const dy = t.clientY - touchStart.y;
