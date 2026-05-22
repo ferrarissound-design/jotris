@@ -78,7 +78,6 @@ body {
 }
 
 .logo-word {
-  --outline: #1f1538;
   display: inline-flex;
   gap: 0.04em;
   align-items: center;
@@ -88,33 +87,19 @@ body {
 
 .logo-letter {
   display: inline-block;
-  position: relative;
-  -webkit-text-stroke: 2.5px var(--outline);
+  -webkit-text-stroke: 2.5px #0d1540;
   text-shadow:
-    0 2px 0 rgba(20, 12, 38, 0.8),
-    0 4px 8px rgba(9, 6, 20, 0.65);
+    0 2px 4px rgba(0, 0, 20, 0.7),
+    0 4px 12px rgba(0, 0, 20, 0.5);
   transform: translateY(-0.01em);
 }
 
-.logo-letter::after {
-  content: "";
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  top: 7%;
-  height: 34%;
-  border-radius: 999px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.16));
-  pointer-events: none;
-  mix-blend-mode: screen;
-}
-
-.logo-letter.j { color: #ff2020; }
-.logo-letter.o { color: #ff8800; }
-.logo-letter.t { color: #ffdd00; }
-.logo-letter.r { color: #22dd22; }
-.logo-letter.i { color: #2255ff; }
-.logo-letter.s { color: #cc00ff; }
+.logo-letter.j { color: #ff4444; }
+.logo-letter.o { color: #ff9900; }
+.logo-letter.t { color: #ffee00; }
+.logo-letter.r { color: #33ee33; }
+.logo-letter.i { color: #4488ff; }
+.logo-letter.s { color: #dd44ff; }
 
 .subtitle {
   color: #9ad2ff;
