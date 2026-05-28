@@ -388,7 +388,7 @@ function drawBoard() {
     });
   });
 
-  if (state.lineEffect && state.lineEffect.timer > 0) {
+  if (!state.gameOver && state.lineEffect && state.lineEffect.timer > 0) {
     const progress = state.lineEffect.timer / 500;
     state.lineEffect.rows.forEach(rowY => {
       boardCtx.fillStyle = `rgba(255, 255, 255, ${progress * 0.75})`;
