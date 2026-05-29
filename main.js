@@ -55,6 +55,9 @@ const SHAPES = {
 
 const scoreByLines = [0, 100, 300, 500, 800];
 
+const LOCK_DELAY = 500;
+const LOCK_MAX_RESETS = 15;
+
 const boardCanvas = document.getElementById('board');
 const boardCtx = boardCanvas.getContext('2d');
 const holdCanvas = document.getElementById('hold');
@@ -197,6 +200,7 @@ function updateScoreUI() {
 
 function holdPiece() {
   if (state.gameOver || state.paused) return;
+  state.lockDelay = { active: false, timer: 0, resets: 0 };
   if (state.hold === null) {
     state.hold = state.piece.type;
     state.piece = state.nextQueue.shift();
@@ -235,6 +239,10 @@ function togglePause() {
   if (state.paused) dropCounter = 0;
 }
 
+function isOnGround() {
+  return collides(state.board, { ...state.piece, y: state.piece.y + 1 });
+}
+
 function move(dx, dy) {
   if (state.gameOver || state.paused) return;
   state.piece.x += dx;
@@ -242,8 +250,18 @@ function move(dx, dy) {
   if (collides(state.board, state.piece)) {
     state.piece.x -= dx;
     state.piece.y -= dy;
-    if (dy === 1) {
-      lockAndContinue();
+    if (dy === 1 && !state.lockDelay.active) {
+      state.lockDelay = { active: true, timer: LOCK_DELAY, resets: 0 };
+      dropCounter = 0;
+    }
+  } else if (state.lockDelay.active) {
+    if (isOnGround()) {
+      if (state.lockDelay.resets < LOCK_MAX_RESETS) {
+        state.lockDelay.timer = LOCK_DELAY;
+        state.lockDelay.resets++;
+      }
+    } else {
+      state.lockDelay = { active: false, timer: 0, resets: 0 };
     }
   }
 }
@@ -269,21 +287,38 @@ function rotate() {
     { x: 0, y: -2 },
   ];
 
+  let rotated = false;
   for (const kick of kicks) {
     state.piece.x = originalX + kick.x;
     state.piece.y = originalY + kick.y;
     if (!collides(state.board, state.piece)) {
-      return;
+      rotated = true;
+      break;
     }
   }
 
-  state.piece.shape = originalShape;
-  state.piece.x = originalX;
-  state.piece.y = originalY;
+  if (!rotated) {
+    state.piece.shape = originalShape;
+    state.piece.x = originalX;
+    state.piece.y = originalY;
+    return;
+  }
+
+  if (state.lockDelay.active) {
+    if (isOnGround()) {
+      if (state.lockDelay.resets < LOCK_MAX_RESETS) {
+        state.lockDelay.timer = LOCK_DELAY;
+        state.lockDelay.resets++;
+      }
+    } else {
+      state.lockDelay = { active: false, timer: 0, resets: 0 };
+    }
+  }
 }
 
 function hardDrop() {
   if (state.gameOver || state.paused) return;
+  state.lockDelay = { active: false, timer: 0, resets: 0 };
 
   let droppedRows = 0;
   while (!collides(state.board, state.piece)) {
@@ -378,6 +413,10 @@ function drawBoard() {
     boardCtx.globalAlpha = 1;
   }
 
+  if (state.lockDelay.active) {
+    const ratio = state.lockDelay.timer / LOCK_DELAY;
+    boardCtx.globalAlpha = 0.45 + 0.55 * ratio;
+  }
   state.piece.shape.forEach((row, y) => {
     row.forEach((value, x) => {
       if (!value) return;
@@ -387,6 +426,7 @@ function drawBoard() {
       }
     });
   });
+  boardCtx.globalAlpha = 1;
 
   if (!state.gameOver && state.lineEffect && state.lineEffect.timer > 0) {
     const progress = state.lineEffect.timer / 500;
@@ -490,10 +530,18 @@ function gameLoop(time = 0) {
   lastTime = time;
 
   if (!state.gameOver && !state.paused) {
-    dropCounter += delta;
-    if (dropCounter >= state.dropInterval) {
-      move(0, 1);
-      dropCounter = 0;
+    if (state.lockDelay.active) {
+      state.lockDelay.timer -= delta;
+      if (state.lockDelay.timer <= 0) {
+        state.lockDelay = { active: false, timer: 0, resets: 0 };
+        lockAndContinue();
+      }
+    } else {
+      dropCounter += delta;
+      if (dropCounter >= state.dropInterval) {
+        move(0, 1);
+        dropCounter = 0;
+      }
     }
   }
 
@@ -529,6 +577,7 @@ function resetGame() {
     combo: 0,
     lineEffect: null,
     newRecord: false,
+    lockDelay: { active: false, timer: 0, resets: 0 },
   };
 
   pauseBtn.textContent = '一時停止';
