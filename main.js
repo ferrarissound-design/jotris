@@ -617,11 +617,15 @@ function handleKeyDown(event) {
   else if (key.toLowerCase() === 'c') holdPiece();
 }
 
-// タッチジェスチャー: タップ→回転、左右スワイプ→移動、下スワイプ→ハードドロップ
+// タッチジェスチャー: タップ→回転、左右スワイプ→移動、下ドラッグ→ソフトドロップ、下フリック→ハードドロップ
 let touchStart = null;
 let touchLastX = 0;
+let touchLastY = 0;
 let touchAccX = 0;
+let touchAccY = 0;
 let touchAxis = null; // 'h'=横操作確定 / 'v'=縦操作確定
+
+const FLICK_VY = 0.6; // px/ms 以上でハードドロップと判定
 
 function displayBlockSize() {
   return boardCanvas.getBoundingClientRect().width / COLS;
@@ -635,7 +639,9 @@ function handleTouchStart(e) {
   const t = e.touches[0];
   touchStart = { x: t.clientX, y: t.clientY, time: Date.now() };
   touchLastX = t.clientX;
+  touchLastY = t.clientY;
   touchAccX = 0;
+  touchAccY = 0;
   touchAxis = null;
 }
 
@@ -652,16 +658,25 @@ function handleTouchMove(e) {
     if (adx > 8 || ady > 8) touchAxis = ady > adx ? 'v' : 'h';
   }
 
-  // 縦スワイプ確定中は横移動しない
+  const blockSize = displayBlockSize();
+  if (blockSize <= 0) return;
+
   if (touchAxis === 'h') {
-    const blockSize = displayBlockSize();
-    if (blockSize <= 0) return;
+    // 横移動: ブロック1個分ドラッグで1マス移動
     touchAccX += t.clientX - touchLastX;
     while (touchAccX >= blockSize) { move(1, 0); touchAccX -= blockSize; }
     while (touchAccX <= -blockSize) { move(-1, 0); touchAccX += blockSize; }
+  } else if (touchAxis === 'v') {
+    // 下ドラッグ: ブロック1個分ドラッグで1マス落下（ソフトドロップ）
+    const moveY = t.clientY - touchLastY;
+    if (moveY > 0) {
+      touchAccY += moveY;
+      while (touchAccY >= blockSize) { move(0, 1); touchAccY -= blockSize; }
+    }
   }
 
   touchLastX = t.clientX;
+  touchLastY = t.clientY;
 }
 
 function handleTouchEnd(e) {
@@ -675,14 +690,17 @@ function handleTouchEnd(e) {
     touchStart = null;
     return;
   }
+  const vy = dt > 0 ? dy / dt : 0;
   if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && dt < 300) {
     rotate();
-  } else if (dy > 50 && Math.abs(dy) > Math.abs(dx) * 1.2) {
+  } else if (dy > 0 && vy >= FLICK_VY) {
+    // 素早い下フリック → ハードドロップ
     hardDrop();
   } else if (dy < -50 && Math.abs(dy) > Math.abs(dx) * 1.2) {
     holdPiece();
   }
   touchStart = null;
+  touchAccY = 0;
 }
 
 restartBtn.addEventListener('click', resetGame);
