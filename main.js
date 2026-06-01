@@ -316,6 +316,13 @@ function rotate() {
   }
 }
 
+function softDrop() {
+  if (state.gameOver || state.paused) return;
+  const prevY = state.piece.y;
+  move(0, 1);
+  if (state.piece.y > prevY) state.score += 1;
+}
+
 function hardDrop() {
   if (state.gameOver || state.paused) return;
   state.lockDelay = { active: false, timer: 0, resets: 0 };
@@ -609,7 +616,7 @@ function handleKeyDown(event) {
 
   if (key === 'ArrowLeft') move(-1, 0);
   else if (key === 'ArrowRight') move(1, 0);
-  else if (key === 'ArrowDown') move(0, 1);
+  else if (key === 'ArrowDown') softDrop();
   else if (key === 'ArrowUp' || key === ' ') rotate();
   else if (key === 'Enter') hardDrop();
   else if (key.toLowerCase() === 'r') resetGame();
@@ -671,7 +678,7 @@ function handleTouchMove(e) {
     const moveY = t.clientY - touchLastY;
     if (moveY > 0) {
       touchAccY += moveY;
-      while (touchAccY >= blockSize) { move(0, 1); touchAccY -= blockSize; }
+      while (touchAccY >= blockSize) { softDrop(); touchAccY -= blockSize; }
     }
   }
 
