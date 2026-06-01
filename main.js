@@ -693,8 +693,8 @@ function handleTouchEnd(e) {
   const vy = dt > 0 ? dy / dt : 0;
   if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && dt < 300) {
     rotate();
-  } else if (dy > 0 && vy >= FLICK_VY && (touchAxis === 'v' || Math.abs(dy) > Math.abs(dx) * 1.2)) {
-    // 素早い下フリック → ハードドロップ（縦軸確定済み or 縦方向優位）
+  } else if (dy > 0 && vy >= FLICK_VY && Math.abs(dy) > Math.abs(dx) * 1.2) {
+    // 素早い下フリック（縦方向優位）→ ハードドロップ
     hardDrop();
   } else if (dy < -50 && Math.abs(dy) > Math.abs(dx) * 1.2) {
     holdPiece();
