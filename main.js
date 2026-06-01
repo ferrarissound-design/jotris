@@ -625,7 +625,7 @@ let touchAccX = 0;
 let touchAccY = 0;
 let touchAxis = null; // 'h'=横操作確定 / 'v'=縦操作確定
 
-const FLICK_VY = 0.6; // px/ms 以上でハードドロップと判定
+const FLICK_VY = 0.35; // px/ms 以上でハードドロップと判定
 
 function displayBlockSize() {
   return boardCanvas.getBoundingClientRect().width / COLS;
@@ -693,8 +693,8 @@ function handleTouchEnd(e) {
   const vy = dt > 0 ? dy / dt : 0;
   if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && dt < 300) {
     rotate();
-  } else if (dy > 0 && vy >= FLICK_VY && Math.abs(dy) > Math.abs(dx) * 1.2) {
-    // 素早い下フリック（縦方向優位）→ ハードドロップ
+  } else if (dy > 0 && vy >= FLICK_VY && (touchAxis === 'v' || Math.abs(dy) > Math.abs(dx) * 1.2)) {
+    // 素早い下フリック → ハードドロップ（縦軸確定済み or 縦方向優位）
     hardDrop();
   } else if (dy < -50 && Math.abs(dy) > Math.abs(dx) * 1.2) {
     holdPiece();
