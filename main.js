@@ -86,6 +86,64 @@ let lastTime = 0;
 let dropCounter = 0;
 let animationId = null;
 
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playMoveSound() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(180, now);
+    gain.gain.setValueAtTime(0.07, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+    osc.start(now);
+    osc.stop(now + 0.04);
+  } catch (_) {}
+}
+
+function playLineClearSound(count) {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    if (count >= 4) {
+      // テトリス: 低→高スイープ
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(280, now);
+      osc.frequency.exponentialRampToValueAtTime(1400, now + 0.45);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    } else {
+      // 1〜3ライン: 短いディン音（ライン数で音程が上がる）
+      const freqs = [0, 523, 659, 784];
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freqs[count], now);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    }
+  } catch (_) {}
+}
+
 function createBoard() {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 }
@@ -161,6 +219,7 @@ function clearLines() {
   }
 
   if (cleared > 0) {
+    playLineClearSound(cleared);
     state.combo += 1;
     state.lines += cleared;
     const comboBonus = state.combo >= 2 ? (state.combo - 1) * 50 * state.level : 0;
@@ -260,14 +319,17 @@ function move(dx, dy) {
       state.lockDelay = { active: true, timer: LOCK_DELAY, resets: 0 };
       dropCounter = 0;
     }
-  } else if (state.lockDelay.active) {
-    if (isOnGround()) {
-      if (state.lockDelay.resets < LOCK_MAX_RESETS) {
-        state.lockDelay.timer = LOCK_DELAY;
-        state.lockDelay.resets++;
+  } else {
+    if (dx !== 0) playMoveSound();
+    if (state.lockDelay.active) {
+      if (isOnGround()) {
+        if (state.lockDelay.resets < LOCK_MAX_RESETS) {
+          state.lockDelay.timer = LOCK_DELAY;
+          state.lockDelay.resets++;
+        }
+      } else {
+        state.lockDelay = { active: false, timer: 0, resets: 0 };
       }
-    } else {
-      state.lockDelay = { active: false, timer: 0, resets: 0 };
     }
   }
 }
