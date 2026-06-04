@@ -70,6 +70,11 @@ const gameScreen = document.getElementById('game-screen');
 const restartBtn = document.getElementById('restart-btn');
 const pauseBtn = document.getElementById('pause-btn');
 const messageEl = document.getElementById('message');
+const bgm = document.getElementById('bgm');
+
+function bgmPlay() { if (bgm) bgm.play().catch(() => {}); }
+function bgmPause() { if (bgm) bgm.pause(); }
+function bgmStop() { if (bgm) { bgm.pause(); bgm.currentTime = 0; } }
 
 const scoreEl = document.getElementById('score');
 const levelEl = document.getElementById('level');
@@ -188,6 +193,7 @@ function lockAndContinue() {
     state.gameOver = true;
     messageEl.textContent = 'GAME OVER - Rでリスタート';
     saveHighScore();
+    bgmStop();
   }
 }
 
@@ -236,7 +242,7 @@ function togglePause() {
   if (state.gameOver) return;
   state.paused = !state.paused;
   pauseBtn.textContent = state.paused ? '再開' : '一時停止';
-  if (state.paused) dropCounter = 0;
+  if (state.paused) { dropCounter = 0; bgmPause(); } else { bgmPlay(); }
 }
 
 function isOnGround() {
@@ -592,6 +598,8 @@ function resetGame() {
   dropCounter = 0;
   lastTime = 0;
   updateScoreUI();
+  bgmStop();
+  bgmPlay();
   gameLoop();
 }
 
