@@ -71,6 +71,7 @@ const restartBtn = document.getElementById('restart-btn');
 const pauseBtn = document.getElementById('pause-btn');
 const messageEl = document.getElementById('message');
 const bgm = document.getElementById('bgm');
+const seLine = document.getElementById('se-line');
 
 function bgmPlay() { if (bgm) bgm.play().catch(() => {}); }
 function bgmPause() { if (bgm) bgm.pause(); }
@@ -121,37 +122,9 @@ function playMoveSound() {
   } catch (_) {}
 }
 
-function playLineClearSound(count) {
+function playLineClearSound() {
   try {
-    const ctx = getAudioCtx();
-    const now = ctx.currentTime;
-    if (count >= 4) {
-      // テトリス: 低→高スイープ
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(280, now);
-      osc.frequency.exponentialRampToValueAtTime(1400, now + 0.45);
-      gain.gain.setValueAtTime(0.3, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-      osc.start(now);
-      osc.stop(now + 0.45);
-    } else {
-      // 1〜3ライン: 短いディン音（ライン数で音程が上がる）
-      const freqs = [0, 523, 659, 784];
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freqs[count], now);
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      osc.start(now);
-      osc.stop(now + 0.22);
-    }
+    if (seLine) { seLine.currentTime = 0; seLine.play().catch(() => {}); }
   } catch (_) {}
 }
 
@@ -230,7 +203,7 @@ function clearLines() {
   }
 
   if (cleared > 0) {
-    playLineClearSound(cleared);
+    playLineClearSound();
     state.combo += 1;
     state.lines += cleared;
     const comboBonus = state.combo >= 2 ? (state.combo - 1) * 50 * state.level : 0;
