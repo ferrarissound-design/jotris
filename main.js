@@ -71,7 +71,7 @@ const restartBtn = document.getElementById('restart-btn');
 const pauseBtn = document.getElementById('pause-btn');
 const messageEl = document.getElementById('message');
 const bgm = document.getElementById('bgm');
-const seLine = document.getElementById('se-line');
+const seLines = [document.getElementById('se-line-1'), document.getElementById('se-line-2')];
 
 function bgmPlay() { if (bgm) bgm.play().catch(() => {}); }
 function bgmPause() { if (bgm) bgm.pause(); }
@@ -124,7 +124,8 @@ function playMoveSound() {
 
 function playLineClearSound() {
   try {
-    if (seLine) { seLine.currentTime = 0; seLine.play().catch(() => {}); }
+    const se = seLines[Math.floor(Math.random() * seLines.length)];
+    if (se) { se.currentTime = 0; se.play().catch(() => {}); }
   } catch (_) {}
 }
 
