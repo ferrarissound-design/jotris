@@ -93,6 +93,17 @@ function getAudioCtx() {
   return audioCtx;
 }
 
+function unlockAudio() {
+  try {
+    const ctx = getAudioCtx();
+    const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+  } catch (_) {}
+}
+
 function playMoveSound() {
   try {
     const ctx = getAudioCtx();
@@ -103,8 +114,8 @@ function playMoveSound() {
     gain.connect(ctx.destination);
     osc.type = 'square';
     osc.frequency.setValueAtTime(180, now);
-    gain.gain.setValueAtTime(0.07, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
     osc.start(now);
     osc.stop(now + 0.04);
   } catch (_) {}
@@ -634,6 +645,7 @@ function gameLoop(time = 0) {
 }
 
 function resetGame() {
+  unlockAudio();
   if (animationId) cancelAnimationFrame(animationId);
   bag = [];
 
@@ -666,6 +678,7 @@ function resetGame() {
 }
 
 function startGame() {
+  unlockAudio();
   titleScreen.classList.remove('active');
   gameScreen.classList.add('active');
   resetGame();
