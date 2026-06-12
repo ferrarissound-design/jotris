@@ -4,8 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <title>JOTRIS</title>
+    <meta name="theme-color" content="#05060d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="JOTRIS" />
+    <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="jo2.jpg" />
-    <link rel="stylesheet" href="style.css?v=12" />
+    <link rel="stylesheet" href="style.css?v=13" />
   </head>
   <body>
     <main class="app">
@@ -14,6 +19,7 @@
           <span class="logo-letter j">J</span><span class="logo-letter o">O</span><span class="logo-letter t">T</span><span class="logo-letter r">R</span><span class="logo-letter i">I</span><span class="logo-letter s">S</span>
         </h1>
         <p class="start-hint">タップしてスタート</p>
+        <button id="help-btn" class="secondary-btn help-btn" type="button">遊び方</button>
       </section>
 
       <section id="game-screen" class="screen" aria-label="ゲーム画面">
@@ -44,11 +50,51 @@
 
         <p id="message" class="message" aria-live="polite"></p>
       </section>
+
+      <div id="help-overlay" class="overlay" hidden>
+        <div class="overlay-panel" role="dialog" aria-label="遊び方">
+          <h2>遊び方</h2>
+          <section class="help-section">
+            <h3>📱 スマホ</h3>
+            <ul class="help-list">
+              <li><b>タップ</b>：回転</li>
+              <li><b>左右にスワイプ</b>：移動</li>
+              <li><b>下にドラッグ</b>：ソフトドロップ</li>
+              <li><b>下に素早くフリック</b>：ハードドロップ</li>
+              <li><b>上にフリック</b>：ホールド</li>
+              <li><b>ゲームオーバー中にタップ</b>：リスタート</li>
+            </ul>
+          </section>
+          <section class="help-section">
+            <h3>⌨️ キーボード</h3>
+            <ul class="help-list">
+              <li><b>← →</b>：移動</li>
+              <li><b>↓</b>：ソフトドロップ</li>
+              <li><b>↑ / スペース</b>：回転</li>
+              <li><b>Enter</b>：ハードドロップ</li>
+              <li><b>C</b>：ホールド</li>
+              <li><b>P</b>：一時停止</li>
+              <li><b>R</b>：リスタート</li>
+              <li><b>T</b>：タイトルへ</li>
+            </ul>
+          </section>
+          <button id="help-close-btn" class="secondary-btn overlay-btn" type="button">閉じる</button>
+        </div>
+      </div>
+
+      <div id="pause-overlay" class="overlay" hidden>
+        <div class="overlay-panel pause-panel" role="dialog" aria-label="一時停止メニュー">
+          <h2>PAUSED</h2>
+          <button id="resume-btn" class="secondary-btn overlay-btn" type="button">再開</button>
+          <button id="pause-restart-btn" class="secondary-btn overlay-btn" type="button">リスタート</button>
+          <button id="pause-title-btn" class="secondary-btn overlay-btn" type="button">タイトルへ</button>
+        </div>
+      </div>
     </main>
 
     <audio id="bgm" src="BGM.mp3" loop preload="auto"></audio>
     <audio id="se-line-1" src="Shikoku.mp3" preload="auto"></audio>
     <audio id="se-line-2" src="Zundamon_1780555126505.mp3" preload="auto"></audio>
-    <script src="main.js?v=5"></script>
+    <script src="main.js?v=6"></script>
   </body>
 </html>

@@ -1,0 +1,26 @@
+{
+  "name": "JOTRIS",
+  "short_name": "JOTRIS",
+  "description": "スマホ対応のテトリス風パズルゲーム「ジョトリス」",
+  "lang": "ja",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05060d",
+  "theme_color": "#05060d",
+  "icons": [
+    {
+      "src": "icon2.PNG",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon2.PNG",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
