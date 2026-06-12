@@ -218,18 +218,31 @@ function rotate() {
   state.piece.y = originalY;
 }
 
+function getGhostPiece() {
+  const ghost = {
+    ...state.piece,
+    shape: state.piece.shape,
+  };
+
+  if (collides(state.board, ghost)) {
+    return ghost;
+  }
+
+  while (!collides(state.board, ghost)) {
+    ghost.y += 1;
+  }
+  ghost.y -= 1;
+
+  return ghost;
+}
+
 function hardDrop() {
   if (state.gameOver) return;
 
-  let droppedRows = 0;
-  while (!collides(state.board, state.piece)) {
-    state.piece.y += 1;
-    droppedRows += 1;
-  }
+  const ghost = getGhostPiece();
+  const droppedRows = Math.max(0, ghost.y - state.piece.y);
 
-  // 最後の1歩は衝突しているので戻す
-  state.piece.y -= 1;
-  droppedRows = Math.max(0, droppedRows - 1);
+  state.piece.y = ghost.y;
 
   // ハードドロップの落下距離に応じたボーナス
   state.score += droppedRows * 2;
@@ -264,6 +277,29 @@ function drawCell(ctx, x, y, color, size) {
   ctx.strokeRect(x * size, y * size, size, size);
 }
 
+function drawGhostCell(ctx, x, y, size) {
+  const px = x * size;
+  const py = y * size;
+  const inset = Math.max(3, Math.floor(size * 0.14));
+
+  ctx.fillStyle = 'rgba(216, 247, 255, 0.08)';
+  ctx.fillRect(px + inset, py + inset, size - inset * 2, size - inset * 2);
+  ctx.strokeStyle = 'rgba(216, 247, 255, 0.45)';
+  ctx.strokeRect(px + inset, py + inset, size - inset * 2, size - inset * 2);
+}
+
+function drawPiece(piece, drawer) {
+  piece.shape.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (!value) return;
+      const drawY = piece.y + y;
+      if (drawY >= 0) {
+        drawer(piece.x + x, drawY, piece.type);
+      }
+    });
+  });
+}
+
 function drawBoard() {
   boardCtx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
   boardCtx.fillStyle = '#060c1e';
@@ -275,15 +311,9 @@ function drawBoard() {
     });
   });
 
-  state.piece.shape.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (!value) return;
-      const drawY = state.piece.y + y;
-      if (drawY >= 0) {
-        drawCell(boardCtx, state.piece.x + x, drawY, COLORS[state.piece.type], BLOCK);
-      }
-    });
-  });
+  const ghost = getGhostPiece();
+  drawPiece(ghost, (x, y) => drawGhostCell(boardCtx, x, y, BLOCK));
+  drawPiece(state.piece, (x, y, type) => drawCell(boardCtx, x, y, COLORS[type], BLOCK));
 }
 
 function drawNext() {
