@@ -70,6 +70,13 @@ const gameScreen = document.getElementById('game-screen');
 const restartBtn = document.getElementById('restart-btn');
 const pauseBtn = document.getElementById('pause-btn');
 const titleBtn = document.getElementById('title-btn');
+const helpBtn = document.getElementById('help-btn');
+const helpOverlay = document.getElementById('help-overlay');
+const helpCloseBtn = document.getElementById('help-close-btn');
+const pauseOverlay = document.getElementById('pause-overlay');
+const resumeBtn = document.getElementById('resume-btn');
+const pauseRestartBtn = document.getElementById('pause-restart-btn');
+const pauseTitleBtn = document.getElementById('pause-title-btn');
 const messageEl = document.getElementById('message');
 const bgm = document.getElementById('bgm');
 const seLines = [document.getElementById('se-line-1'), document.getElementById('se-line-2')];
@@ -287,6 +294,7 @@ function togglePause() {
   if (state.gameOver) return;
   state.paused = !state.paused;
   pauseBtn.textContent = state.paused ? '再開' : '一時停止';
+  pauseOverlay.hidden = !state.paused;
   if (state.paused) { dropCounter = 0; bgmPause(); } else { bgmPlay(); }
 }
 
@@ -560,13 +568,9 @@ function drawBoard() {
       boardCtx.fillText('タップ/R リスタート・T タイトルへ', cx, 530);
     }
   } else if (state.paused) {
+    // 一時停止中は盤面を隠す（覗き見防止）。メニューはHTMLオーバーレイで表示
     boardCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
     boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
-    boardCtx.fillStyle = '#2ff3ff';
-    boardCtx.font = 'bold 48px "Segoe UI", sans-serif';
-    boardCtx.textAlign = 'center';
-    boardCtx.textBaseline = 'middle';
-    boardCtx.fillText('PAUSED', boardCanvas.width / 2, boardCanvas.height / 2);
   }
 }
 
@@ -643,6 +647,7 @@ function resetGame() {
   };
 
   pauseBtn.textContent = '一時停止';
+  pauseOverlay.hidden = true;
   messageEl.textContent = '';
   dropCounter = 0;
   lastTime = 0;
@@ -666,6 +671,7 @@ function goToTitle() {
     animationId = null;
   }
   bgmStop();
+  pauseOverlay.hidden = true;
   messageEl.textContent = '';
   gameScreen.classList.remove('active');
   titleScreen.classList.add('active');
@@ -785,16 +791,39 @@ restartBtn.addEventListener('click', resetGame);
 pauseBtn.addEventListener('click', togglePause);
 titleBtn.addEventListener('click', goToTitle);
 
+// 一時停止メニュー
+resumeBtn.addEventListener('click', togglePause);
+pauseRestartBtn.addEventListener('click', resetGame);
+pauseTitleBtn.addEventListener('click', goToTitle);
+
+// 遊び方オーバーレイ（背景タップでも閉じられる）
+helpBtn.addEventListener('click', () => { helpOverlay.hidden = false; });
+helpCloseBtn.addEventListener('click', () => { helpOverlay.hidden = true; });
+helpOverlay.addEventListener('click', (e) => {
+  if (e.target === helpOverlay) helpOverlay.hidden = true;
+});
+
 document.addEventListener('keydown', handleKeyDown);
 
-// タイトル画面: タッチ・クリックいずれでもゲーム開始
+// タイトル画面: タッチ・クリックいずれでもゲーム開始（遊び方ボタンは除く）
 titleScreen.addEventListener('touchstart', (e) => {
+  if (e.target.closest('#help-btn')) return;
   e.preventDefault();
   startGame();
 }, { passive: false });
-titleScreen.addEventListener('click', startGame);
+titleScreen.addEventListener('click', (e) => {
+  if (e.target.closest('#help-btn')) return;
+  startGame();
+});
 
 // documentに登録: iOS Safariは非インタラクティブ要素のtouchstartを発火しないため
 document.addEventListener('touchstart', handleTouchStart, { passive: false });
 document.addEventListener('touchmove', handleTouchMove, { passive: false });
 document.addEventListener('touchend', handleTouchEnd);
+
+// PWA: service workerを登録してオフラインでも遊べるようにする
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
