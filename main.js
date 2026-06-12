@@ -69,6 +69,7 @@ const titleScreen = document.getElementById('title-screen');
 const gameScreen = document.getElementById('game-screen');
 const restartBtn = document.getElementById('restart-btn');
 const pauseBtn = document.getElementById('pause-btn');
+const titleBtn = document.getElementById('title-btn');
 const messageEl = document.getElementById('message');
 const bgm = document.getElementById('bgm');
 const seLines = [document.getElementById('se-line-1'), document.getElementById('se-line-2')];
@@ -556,7 +557,7 @@ function drawBoard() {
     if (Math.floor(Date.now() / 600) % 2 === 0) {
       boardCtx.fillStyle = '#a7dfff';
       boardCtx.font = '14px "Segoe UI", sans-serif';
-      boardCtx.fillText('タップ / R でリスタート', cx, 530);
+      boardCtx.fillText('タップ/R リスタート・T タイトルへ', cx, 530);
     }
   } else if (state.paused) {
     boardCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
@@ -658,16 +659,28 @@ function startGame() {
   resetGame();
 }
 
+function goToTitle() {
+  if (state && !state.gameOver) saveHighScore();
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+  bgmStop();
+  messageEl.textContent = '';
+  gameScreen.classList.remove('active');
+  titleScreen.classList.add('active');
+}
+
 function handleKeyDown(event) {
   if (!gameScreen.classList.contains('active')) return;
 
   const key = event.key;
-  if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' ', 'Enter', 'r', 'R', 'p', 'P', 'c', 'C'].includes(key)) {
+  if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' ', 'Enter', 'r', 'R', 'p', 'P', 'c', 'C', 't', 'T'].includes(key)) {
     event.preventDefault();
   }
 
   // 長押しリピートで回転/ハードドロップ/ポーズ/ホールドが連続発火しないようにする
-  if (event.repeat && (key === 'ArrowUp' || key === ' ' || key === 'Enter' || key.toLowerCase() === 'r' || key.toLowerCase() === 'p' || key.toLowerCase() === 'c')) {
+  if (event.repeat && (key === 'ArrowUp' || key === ' ' || key === 'Enter' || key.toLowerCase() === 'r' || key.toLowerCase() === 'p' || key.toLowerCase() === 'c' || key.toLowerCase() === 't')) {
     return;
   }
 
@@ -679,6 +692,7 @@ function handleKeyDown(event) {
   else if (key.toLowerCase() === 'r') resetGame();
   else if (key.toLowerCase() === 'p') togglePause();
   else if (key.toLowerCase() === 'c') holdPiece();
+  else if (key.toLowerCase() === 't') goToTitle();
 }
 
 // タッチジェスチャー: タップ→回転、左右スワイプ→移動、下ドラッグ→ソフトドロップ、下フリック→ハードドロップ
@@ -769,6 +783,7 @@ function handleTouchEnd(e) {
 
 restartBtn.addEventListener('click', resetGame);
 pauseBtn.addEventListener('click', togglePause);
+titleBtn.addEventListener('click', goToTitle);
 
 document.addEventListener('keydown', handleKeyDown);
 
