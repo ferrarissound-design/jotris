@@ -1,12 +1,12 @@
 // JOTRIS service worker: アセットをキャッシュしてオフラインでも遊べるようにする
 // アセットを更新したら CACHE_NAME のバージョンを上げること
 
-const CACHE_NAME = 'jotris-v1';
+const CACHE_NAME = 'jotris-v2';
 const ASSETS = [
   './',
   './index.html',
   './style.css?v=13',
-  './main.js?v=6',
+  './main.js?v=7',
   './manifest.json',
   './BGM.mp3',
   './Shikoku.mp3',
