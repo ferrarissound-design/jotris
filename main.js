@@ -54,6 +54,11 @@ const SHAPES = {
 };
 
 const scoreByLines = [0, 100, 300, 500, 800];
+// T-スピン系の加点（消去ライン数 0/1/2/3 に対応、レベル倍率を掛ける）
+const tspinScores = [400, 800, 1200, 1600];
+const miniTspinScores = [100, 200];
+// パーフェクトクリア（全消し）ボーナス（消去ライン数 1/2/3/4 に対応）
+const perfectClearScores = [0, 800, 1200, 1800, 2000];
 
 const LOCK_DELAY = 500;
 const LOCK_MAX_RESETS = 15;
@@ -169,6 +174,7 @@ function spawnPiece(type) {
     shape,
     x: Math.floor((COLS - shape[0].length) / 2),
     y: -1,
+    rotation: 0,
   };
 }
 
@@ -198,7 +204,39 @@ function mergePiece() {
   });
 }
 
-function clearLines() {
+// 盤面のマス（bx, by）がブロック or 壁 or 床で塞がっているか
+function isCellBlocked(bx, by) {
+  if (bx < 0 || bx >= COLS || by >= ROWS) return true;
+  if (by < 0) return false; // 盤面上端より上は空きとみなす
+  return Boolean(state.board[by][bx]);
+}
+
+// T-スピン判定: 直前の操作が回転で、T字の3隅以上が塞がっていれば成立。
+// 正面2隅が両方塞がっている、または大きな壁蹴り（キック）で入った場合は「本T-スピン」、
+// それ以外は「ミニT-スピン」。戻り値は 'tspin' / 'mini' / 'none'。
+function detectTSpin() {
+  const p = state.piece;
+  if (!p || p.type !== 'T' || !state.lastMoveWasRotation) return 'none';
+
+  // T字は常に3x3行列。中心を挟む四隅を盤面座標で判定する。
+  const cornerOffsets = [[0, 0], [2, 0], [0, 2], [2, 2]];
+  const blocked = cornerOffsets.map(([ox, oy]) => isCellBlocked(p.x + ox, p.y + oy));
+  const total = blocked.filter(Boolean).length;
+  if (total < 3) return 'none';
+
+  // 向き（rotation 0=上/1=右/2=下/3=左）ごとの「正面2隅」のインデックス
+  const frontByRot = { 0: [0, 1], 1: [1, 3], 2: [2, 3], 3: [0, 2] };
+  const [fa, fb] = frontByRot[p.rotation % 4] || [0, 1];
+  const frontBoth = blocked[fa] && blocked[fb];
+  const farKick = state.lastKick && (Math.abs(state.lastKick.x) >= 2 || state.lastKick.y <= -2);
+  return (frontBoth || farKick) ? 'tspin' : 'mini';
+}
+
+function isBoardEmpty() {
+  return state.board.every((row) => row.every((cell) => !cell));
+}
+
+function clearLines(tspin) {
   let cleared = 0;
   const clearedRows = [];
   for (let y = ROWS - 1; y >= 0; y -= 1) {
@@ -211,35 +249,92 @@ function clearLines() {
     }
   }
 
+  const isTspin = tspin === 'tspin';
+  const isMini = tspin === 'mini';
+
+  // 何も起きていない（ライン消去なし かつ T-スピンでもない）なら加点なし
+  if (cleared === 0 && !isTspin && !isMini) {
+    return cleared;
+  }
+
   if (cleared > 0) {
     playLineClearSound();
     state.combo += 1;
     state.lines += cleared;
-    const comboBonus = state.combo >= 2 ? (state.combo - 1) * 50 * state.level : 0;
-    state.score += (scoreByLines[cleared] || 0) * state.level + comboBonus;
     const nextLevel = Math.floor(state.lines / 10) + 1;
     state.level = nextLevel;
     state.dropInterval = Math.max(1000 - (state.level - 1) * 80, 120);
+  }
 
-    const labels = ['', 'SINGLE', 'DOUBLE', 'TRIPLE', 'TETRIS!!'];
-    state.lineEffect = {
-      timer: 500,
-      rows: clearedRows,
-      label: labels[cleared] || `${cleared} LINES`,
-      combo: state.combo,
-    };
-    if (navigator.vibrate) navigator.vibrate(cleared === 4 ? [60, 30, 60] : [30]);
+  // Back-to-Back: 難しい消去（テトリス、またはライン消去付きT-スピン）が
+  // 通常消去を挟まず連続したときにボーナス。
+  const difficult = cleared === 4 || ((isTspin || isMini) && cleared >= 1);
+  let b2bActive = false;
+  if (cleared > 0) {
+    if (difficult) {
+      if (state.b2b) b2bActive = true;
+      state.b2b = true;
+    } else {
+      state.b2b = false; // 通常の1〜3ライン消去はB2Bを途切れさせる
+    }
+  }
+
+  // 消去点数の算出（T-スピン > ミニT-スピン > 通常 の順で参照）
+  let baseScore;
+  if (isTspin) baseScore = tspinScores[cleared] ?? 0;
+  else if (isMini) baseScore = miniTspinScores[cleared] ?? tspinScores[cleared] ?? 0;
+  else baseScore = scoreByLines[cleared] || 0;
+
+  let lineScore = baseScore * state.level;
+  if (b2bActive) lineScore = Math.round(lineScore * 1.5);
+
+  const comboBonus = state.combo >= 2 ? (state.combo - 1) * 50 * state.level : 0;
+
+  // パーフェクトクリア（全消し）
+  const perfect = cleared > 0 && isBoardEmpty();
+  const pcBonus = perfect ? (perfectClearScores[cleared] || 2000) * state.level : 0;
+
+  state.score += lineScore + comboBonus + pcBonus;
+
+  // 表示ラベルの組み立て
+  const normalLabels = ['', 'SINGLE', 'DOUBLE', 'TRIPLE', 'TETRIS!!'];
+  const tspinLabels = ['T-SPIN', 'T-SPIN SINGLE', 'T-SPIN DOUBLE', 'T-SPIN TRIPLE'];
+  let label;
+  if (perfect) {
+    label = 'PERFECT CLEAR';
+  } else if (isTspin) {
+    label = tspinLabels[cleared] || `T-SPIN ${cleared}`;
+  } else if (isMini) {
+    label = cleared >= 1 ? 'MINI T-SPIN ' + (normalLabels[cleared] || cleared) : 'MINI T-SPIN';
+  } else {
+    label = normalLabels[cleared] || `${cleared} LINES`;
+  }
+  if (b2bActive && !perfect) label = 'B2B ' + label;
+
+  state.lineEffect = {
+    timer: 500,
+    rows: clearedRows,
+    label,
+    combo: cleared > 0 ? state.combo : 0,
+  };
+
+  if (navigator.vibrate) {
+    if (perfect || isTspin) navigator.vibrate([50, 30, 50, 30, 50]);
+    else navigator.vibrate(cleared === 4 ? [60, 30, 60] : [30]);
   }
 
   return cleared;
 }
 
 function lockAndContinue() {
+  const tspin = detectTSpin();
   mergePiece();
-  const cleared = clearLines();
+  const cleared = clearLines(tspin);
   if (cleared === 0) state.combo = 0;
   state.piece = state.nextQueue.shift();
   state.nextQueue.push(spawnPiece(nextType()));
+  state.lastMoveWasRotation = false;
+  state.lastKick = null;
 
   if (collides(state.board, state.piece)) {
     state.gameOver = true;
@@ -259,6 +354,8 @@ function updateScoreUI() {
 function holdPiece() {
   if (state.gameOver || state.paused) return;
   state.lockDelay = { active: false, timer: 0, resets: 0 };
+  state.lastMoveWasRotation = false;
+  state.lastKick = null;
   if (state.hold === null) {
     state.hold = state.piece.type;
     state.piece = state.nextQueue.shift();
@@ -314,6 +411,8 @@ function move(dx, dy) {
       dropCounter = 0;
     }
   } else {
+    // 平行移動が成立したのでT-スピン成立フラグを解除（直前の操作が回転でなくなる）
+    state.lastMoveWasRotation = false;
     if (dx !== 0) playMoveSound();
     if (state.lockDelay.active) {
       if (isOnGround()) {
@@ -355,6 +454,7 @@ function rotate() {
     state.piece.y = originalY + kick.y;
     if (!collides(state.board, state.piece)) {
       rotated = true;
+      state.lastKick = kick;
       break;
     }
   }
@@ -365,6 +465,10 @@ function rotate() {
     state.piece.y = originalY;
     return;
   }
+
+  // 回転成立: T-スピン判定用に「直前の操作は回転」と向きを記録
+  state.piece.rotation = (state.piece.rotation + 1) % 4;
+  state.lastMoveWasRotation = true;
 
   if (state.lockDelay.active) {
     if (isOnGround()) {
@@ -401,6 +505,10 @@ function hardDrop() {
 
   // ハードドロップの落下距離に応じたボーナス
   state.score += droppedRows * 2;
+
+  // 実際に落下した場合は「直前の操作＝回転」ではなくなるのでT-スピン成立を解除。
+  // 回転で隙間に収まりそのまま落下距離0でドロップした場合のみT-スピン成立を維持する。
+  if (droppedRows > 0) state.lastMoveWasRotation = false;
 
   lockAndContinue();
 }
@@ -503,12 +611,18 @@ function drawBoard() {
       boardCtx.fillStyle = `rgba(255, 255, 255, ${progress * 0.75})`;
       boardCtx.fillRect(0, rowY * BLOCK, boardCanvas.width, BLOCK);
     });
-    const fontSize = Math.round(BLOCK * 1.3);
+    // ラベルが長い場合（B2B / T-SPIN / PERFECT CLEAR 等）は盤面幅に収まるよう縮小
+    let fontSize = Math.round(BLOCK * 1.3);
+    const maxWidth = boardCanvas.width - 16;
+    boardCtx.font = `bold ${fontSize}px "Segoe UI", sans-serif`;
+    while (fontSize > 12 && boardCtx.measureText(state.lineEffect.label).width > maxWidth) {
+      fontSize -= 2;
+      boardCtx.font = `bold ${fontSize}px "Segoe UI", sans-serif`;
+    }
     boardCtx.globalAlpha = Math.min(1, progress * 2);
     boardCtx.fillStyle = '#2ff3ff';
     boardCtx.shadowColor = '#2ff3ff';
     boardCtx.shadowBlur = 24;
-    boardCtx.font = `bold ${fontSize}px "Segoe UI", sans-serif`;
     boardCtx.textAlign = 'center';
     boardCtx.textBaseline = 'middle';
     const centerY = state.lineEffect.combo >= 2
@@ -644,6 +758,9 @@ function resetGame() {
     lineEffect: null,
     newRecord: false,
     lockDelay: { active: false, timer: 0, resets: 0 },
+    b2b: false,
+    lastMoveWasRotation: false,
+    lastKick: null,
   };
 
   pauseBtn.textContent = '一時停止';
